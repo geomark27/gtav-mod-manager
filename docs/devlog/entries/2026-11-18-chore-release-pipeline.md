@@ -4,7 +4,7 @@ branch: feature/release-pipeline
 type: chore
 author: Marcos Ramos Jacome
 agents: claude:orchestrator, opencode:deepseek-v4.1-flash-free (t26 release tooling), opencode:deepseek-v4.1-flash-free (t27 in-app updates)
-pr: pending
+pr: "#1"
 version: unreleased
 ---
 
