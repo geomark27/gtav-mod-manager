@@ -24,7 +24,7 @@ MAIN_DIR := $(shell git worktree list --porcelain 2>/dev/null | awk '/^worktree 
 WORK_BRANCHES := feature/*|fix/*|docs/*|release/*
 
 # Web link of the remote (accepts https://… and git@host:…) for compare links.
-REPO_URL_SH = git remote get-url $(REMOTE) | sed -E 's\#^git@([^:]+):\#https://\1/\#; s\#^ssh://git@([^/]+)/\#https://\1/\#; s\#\.git$$\##'
+REPO_URL_SH = git remote get-url $(REMOTE) | sed -E 's\#^git@([^:]+):\#https://\1/\#; s\#^ssh://git@([^/]+)/\#https://\1/\#; s\#\.git$$\#\#'
 
 # Parameters (name, type, b, run, dest, …) reach the shell as environment variables.
 export name type b run dest
