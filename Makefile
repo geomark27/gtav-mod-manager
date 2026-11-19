@@ -104,7 +104,7 @@ ship: ## push + pr + merge, stopping at the first failure; then finish from the 
 	@MERGE_AVISO=0 $(MAKE) --no-print-directory merge
 	@echo "now, from the main folder: make finish"
 
-finish: ## After the PR is merged: remove its worktree and local branch (run from the main folder; b=<branch>)
+finish: ## After the PR is merged: switch to develop (fast-forward), remove the branch's worktree if it has one, delete the local branch (b=<branch>)
 	@br="$(if $(b),$(b),$(BRANCH))"; \
 	case "$$br" in main|"$(BASE)"|"") echo "✗ nothing to finish from '$$br'" >&2; exit 1;; $(WORK_BRANCHES)) ;; *) echo "✗ '$$br' is not a work branch (feature/*, fix/*, docs/* or release/*)" >&2; exit 1;; esac; \
 	[ "$$(git rev-parse --absolute-git-dir)" = "$$(git rev-parse --path-format=absolute --git-common-dir)" ] \
@@ -114,11 +114,11 @@ finish: ## After the PR is merged: remove its worktree and local branch (run fro
 	git merge-base --is-ancestor "$$br" "$(REMOTE)/$(BASE)" \
 		|| { echo "✗ '$$br' is not merged into $(REMOTE)/$(BASE): merge its PR with a merge commit first (squash and rebase do not count)" >&2; exit 1; }; \
 	wt=$$(git worktree list --porcelain | awk -v b="refs/heads/$$br" '/^worktree /{p=substr($$0,10)} $$0=="branch " b {print p; exit}'); \
-	if [ -n "$$wt" ]; then \
+	if [ -n "$$wt" ] && [ "$$wt" != "$$(git rev-parse --show-toplevel)" ]; then \
 		git worktree remove "$$wt" || { echo "✗ could not remove $$wt: it has uncommitted or untracked files; clean it by hand" >&2; exit 1; }; \
 		echo "✓ worktree $$wt removed"; \
 	fi; \
-	if [ "$(BRANCH)" = "$$br" ]; then git switch "$(BASE)"; fi; \
+	if [ "$(BRANCH)" = "$$br" ]; then git switch "$(BASE)" && git merge --quiet --ff-only "$(REMOTE)/$(BASE)"; fi; \
 	git branch -d "$$br" || { echo "✗ git did not delete local branch '$$br'" >&2; exit 1; }; \
 	echo "✓ '$$br' closed"; \
 	echo "The remote branch is deleted by its author (not done here):"; \

@@ -27,7 +27,7 @@ echo "Reaching $main:"
 echo "$pending"
 echo
 
-pr=$(gh pr list --base "$main" --head "$base" --state open --json number,url --jq '.[0] | "\(.number) \(.url)"' || true)
+pr=$(gh pr list --base "$main" --head "$base" --state open --json number,url --jq '.[0] // empty | "\(.number) \(.url)"' || true)
 if [ -n "$pr" ]; then
   num=${pr%% *}
   url=${pr#* }
