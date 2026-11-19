@@ -177,7 +177,8 @@ ui: ## Type-check, test and build the UI
 devlog: ## Verify this branch's devlog entry against develop
 	@bash .claude/skills/devlog/scripts/verify.sh --base $(BASE)
 
-check: ## What must pass before a commit and in CI: fmt-check, lint, test, ui, devlog
+check: ## What must pass before a commit and in CI: Tauri versions, fmt-check, lint, test, ui, devlog
+	@bash scripts/check-tauri-versions.sh
 	@$(MAKE) --no-print-directory fmt-check
 	@$(MAKE) --no-print-directory lint
 	@$(MAKE) --no-print-directory test
