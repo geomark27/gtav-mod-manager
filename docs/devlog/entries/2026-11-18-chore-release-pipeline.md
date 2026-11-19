@@ -31,6 +31,10 @@ version: unreleased
 - Versions aligned at `0.1.0` in `Cargo.toml`, `tauri.conf.json` and `package.json`;
   `CHANGELOG.md` starts with everything the product does today under `[Unreleased]`.
 - Devlog set up for the project (English, vendored skill); `opencode.json` is no longer tracked.
+- Rust pinned to 1.97.1 (`rust-toolchain.toml`) so local, CI and release builds format and lint
+  the same; `.gitattributes` forces LF so embedded catalogs and scripts are identical on Windows
+  (the first Windows CI run failed on CRLF and on a test that creates names Windows forbids,
+  now Unix-only).
 
 ## Why
 

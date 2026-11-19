@@ -39,7 +39,7 @@ How a version is cut, tagged and published: [docs/release.md](docs/release.md).
 ## Development
 
 - Core (WSL/Linux or Windows): `cargo test` · `cargo clippy --all-targets -- -D warnings`
-- Windows target check from WSL: `cargo check --target x86_64-pc-windows-gnu`
+- Windows target check from WSL: `cargo check --target x86_64-pc-windows-gnu` (once: `rustup target add x86_64-pc-windows-gnu`; the toolchain is pinned in `rust-toolchain.toml`)
 - UI: `cd apps/desktop && npm install && npm test && npm run build`
 - Desktop app (Windows): `cd apps/desktop && npm run tauri dev`
 

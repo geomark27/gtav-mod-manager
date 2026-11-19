@@ -1,0 +1,7 @@
+# Same line endings on every OS: embedded files (catalog TOML, migrations) and shell scripts must
+# be byte-identical on Windows, where git would otherwise check them out with CRLF.
+* text=auto eol=lf
+*.ico binary
+*.icns binary
+*.png binary
+*.exe binary
