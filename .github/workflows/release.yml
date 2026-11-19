@@ -1,0 +1,166 @@
+# Builds the Windows installer when a vX.Y.Z tag is pushed (make release), signs it for the
+# updater, attaches the fixed-name installer with SHA256SUMS.txt and latest.json, and publishes
+# the release when the build succeeds. If something fails the release stays a draft and the run
+# can be repeated from the Actions tab. The updater signature (TAURI_SIGNING_PRIVATE_KEY secret,
+# see make updater-key) is not a Windows code signature: SmartScreen still warns.
+#
+# workflow_dispatch builds the installer of a branch WITHOUT updater artifacts (plain config, no
+# secret) and only uploads it as a workflow artifact: a way to try the .exe before releasing.
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or commit to build (nothing is released)
+        required: true
+        default: develop
+
+permissions:
+  contents: write
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  GH_REPO: ${{ github.repository }}
+  TAG: ${{ github.ref_name }}
+
+jobs:
+  prepare:
+    name: Prepare release
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: The tag matches the three version files
+        run: |
+          cargo_version=$(awk '/^\[workspace\.package\]/{s=1;next} /^\[/{s=0} s && /^version = "/{gsub(/^version = "|"$/,"");print;exit}' Cargo.toml)
+          app_version=$(sed -n 's/^  "version": "\(.*\)",$/\1/p' apps/desktop/src-tauri/tauri.conf.json)
+          ui_version=$(sed -n 's/^  "version": "\(.*\)",$/\1/p' apps/desktop/package.json)
+          [[ "v$cargo_version" == "$TAG" ]] || { echo "::error::Cargo.toml says $cargo_version and the tag is $TAG"; exit 1; }
+          [[ "$app_version" == "$cargo_version" ]] || { echo "::error::tauri.conf.json says $app_version and Cargo.toml says $cargo_version"; exit 1; }
+          [[ "$ui_version" == "$cargo_version" ]] || { echo "::error::package.json says $ui_version and Cargo.toml says $cargo_version"; exit 1; }
+
+      - name: The updater key is configured
+        run: |
+          ! grep -q '"pubkey": "PENDING' apps/desktop/src-tauri/tauri.conf.json \
+            || { echo "::error::tauri.conf.json still has the placeholder updater key: run make updater-key"; exit 1; }
+
+      - name: Create the draft release if it does not exist
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 && exit 0
+          bash scripts/changelog-notes.sh "${TAG#v}" | gh release create "$TAG" --draft --verify-tag \
+            --title "GTA V Mod Manager $TAG" --notes-file -
+
+  build:
+    name: Installer (Windows)
+    if: github.event_name == 'push'
+    needs: prepare
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - name: UI dependencies
+        shell: bash
+        working-directory: apps/desktop
+        run: npm ci
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      # tauri.release.conf.json turns on the updater artifacts (the .sig signature). The
+      # frontend build (npm run build) runs through beforeBuildCommand.
+      - name: Build and sign
+        shell: bash
+        working-directory: apps/desktop
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+        run: npm run tauri build -- --config src-tauri/tauri.release.conf.json
+
+      # Fixed name, so releases/latest/download/GTAV-Mod-Manager-windows-x64-setup.exe always
+      # points at the newest version. The signature goes apart (sigs/) to build latest.json in
+      # «publish».
+      - name: Upload to the release
+        shell: bash
+        run: |
+          mkdir -p dist sigs
+          f=$(find target -type f -path '*/release/bundle/nsis/*' -name '*-setup.exe' | head -1)
+          [[ -n "$f" ]] || { echo "::error::the NSIS installer (*-setup.exe) was not generated"; exit 1; }
+          [[ -f "$f.sig" ]] || { echo "::error::the updater signature ($f.sig) was not generated: check the TAURI_SIGNING_PRIVATE_KEY secret and tauri.release.conf.json"; exit 1; }
+          cp "$f" dist/GTAV-Mod-Manager-windows-x64-setup.exe
+          cp "$f.sig" sigs/GTAV-Mod-Manager-windows-x64-setup.exe.sig
+          ( cd dist && sha256sum GTAV-Mod-Manager-windows-x64-setup.exe > SHA256SUMS.txt )
+          ls -l dist sigs
+          cat dist/SHA256SUMS.txt
+          gh release upload "$TAG" dist/* --clobber
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sigs-windows
+          path: sigs/
+
+  publish:
+    name: Publish
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: sigs-*
+          merge-multiple: true
+          path: sigs
+
+      - name: Upload latest.json
+        run: bash scripts/updater-manifest.sh "$TAG" sigs
+
+      - name: Publish the release
+        run: gh release edit "$TAG" --draft=false --latest
+
+  build-test:
+    name: Test installer (no release)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - name: UI dependencies
+        shell: bash
+        working-directory: apps/desktop
+        run: npm ci
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      # Plain configuration and no signing secret: the installer works, but it is not an updater
+      # artifact and nothing is published.
+      - name: Build
+        shell: bash
+        working-directory: apps/desktop
+        run: npm run tauri build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gtav-mod-manager-installer
+          path: target/release/bundle/nsis/*-setup.exe

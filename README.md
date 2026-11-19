@@ -25,6 +25,17 @@ Tauri 2 · React + TypeScript (Vite) · Rust (workspace of crates) · SQLite.
 | `apps/desktop`            | React UI + Tauri shell (`src-tauri`)                   |
 | `docs/`                   | Architecture, data model, security, testing, roadmap   |
 
+## Download & release
+
+Windows users download the installer from the
+[latest release](https://github.com/geomark27/gtav-mod-manager/releases/latest/download/GTAV-Mod-Manager-windows-x64-setup.exe)
+(`GTAV-Mod-Manager-windows-x64-setup.exe`, `SHA256SUMS.txt` next to it), and the app updates
+itself from then on. Releases are built and signed by GitHub Actions; the installer has no
+code-signing certificate, so SmartScreen shows “Windows protected your PC” the first time
+(More info → Run anyway).
+
+How a version is cut, tagged and published: [docs/release.md](docs/release.md).
+
 ## Development
 
 - Core (WSL/Linux or Windows): `cargo test` · `cargo clippy --all-targets -- -D warnings`
