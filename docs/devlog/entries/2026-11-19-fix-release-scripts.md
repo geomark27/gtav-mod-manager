@@ -24,10 +24,16 @@ version: unreleased
   versions, and `scripts/check-tauri-versions.sh` now runs in `make check`, in CI (UI job) and in
   the release `prepare` job, so a mismatch fails early instead of at release time.
 
+- CI is lighter: it runs once per release, on the promotion PR to `main` (or by hand from the
+  Actions tab), instead of on every push and PR to `develop` and `main`; the devlog check stays
+  local in `make check`. The release workflow is unchanged.
+
 ## Why
 
 All three broke during the first release attempt (v0.1.0): finish and promote had to be done by
-hand, and the release build failed, leaving the v0.1.0 release as an unpublished draft.
+hand, and the release build failed, leaving the v0.1.0 release as an unpublished draft. The
+owner is the only user for now and wants tests once before each release, not a full CI on every
+change.
 
 ## Files and areas
 
