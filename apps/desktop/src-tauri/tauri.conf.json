@@ -52,7 +52,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "PENDING: run make updater-key",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVDMTY5MTMwMTJGMDUzMDUKUldRRlUvQVNNSkVXWEFuYm5JdW5IMDZjWXovaUd5eTlUTG9NNllXNW82ZUV3OGpVakpPK0NpZ1QK",
       "endpoints": [
         "https://github.com/geomark27/gtav-mod-manager/releases/latest/download/latest.json"
       ],
