@@ -18,7 +18,12 @@ Project language: **English** for code, comments, identifiers, UI text, docs and
 - Other agents work in the same folder at the same time on other files. Never reformat, move or
   delete files you do not own. Never run `cargo fmt` on the whole workspace: use
   `cargo fmt -p <your-crate>`.
-- There is no git in this project for now. Do not run `git init` or any git command.
+- The project is a git repo (GitHub, `main` + `develop`, work on `feature|fix|docs|release/*`
+  branches). Agents never run git commands that write (`commit`, `push`, `switch`, `branch`,
+  `tag`, `merge`, `rebase`, `reset`, `stash`) nor `gh` write commands: the owner and the Tech
+  Lead do that (see `docs/release.md`). Read-only git (`status`, `diff`, `log`) is fine.
+- Do not edit `docs/devlog/**`: end your report with a `DEVLOG CONTRIBUTION` block (`agent:`,
+  `what:`, `why:`, `files:`, `test:`, `follow-up:`); the Tech Lead writes the branch entry.
 - Do not edit: `Cargo.toml` (root), `AGENTS.md`, `docs/**`, `.delegar/**`, `opencode.json`.
 - Do not install system packages. Rust crates must come from `[workspace.dependencies]` in the
   root `Cargo.toml` (`dep = { workspace = true }`). If you need a crate that is not there, stop

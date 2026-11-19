@@ -3,6 +3,7 @@ import { Badge } from "../../components/Badge";
 import { Card } from "../../components/Card";
 import { formatDateTime } from "../../lib/format";
 import { ErrorMessage } from "../installations/ErrorMessage";
+import { UpdatesCard } from "../updates/UpdatesCard";
 import { VaultCard } from "../vault/VaultCard";
 import { useAppStatus } from "../status/useAppStatus";
 import styles from "./Settings.module.css";
@@ -63,6 +64,7 @@ export function SettingsView() {
         </dl>
       </Card>
       <VaultCard />
+      <UpdatesCard />
       <p>{STORY_MODE_NOTICE}</p>
     </div>
   );

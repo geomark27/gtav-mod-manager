@@ -4,3 +4,14 @@ dist/
 apps/desktop/src-tauri/gen/
 .delegar/
 *.log
+
+# Release tooling
+/dist-release/
+*.key
+/CHANGELOG.md.tmp
+/Cargo.lock.tmp
+/apps/desktop/package-lock.json.tmp
+/latest.json
+
+# Local runner config (opencode); not part of the product
+opencode.json

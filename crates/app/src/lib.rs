@@ -42,7 +42,9 @@ pub use inventory::{InventoryFilterDto, InventoryItemDto, InventoryPageDto, Inve
 pub use lock::InstanceLock;
 pub use logging::{LogGuard, init_logging};
 pub use mods::{ModConflictDto, ModDetailDto, ModDto, ModEntryDto};
-pub use operation::{NullSink, OperationKind, ProgressDto, ProgressSink, ThrottledSink};
+pub use operation::{
+    NullSink, OperationKind, OperationStatusDto, ProgressDto, ProgressSink, ThrottledSink,
+};
 pub use profiles::{
     ProfileDetailDto, ProfileDto, ProfileEntryDto, ProfileEntryInput, VANILLA_PROFILE_ID,
     profile_name_suggestions,

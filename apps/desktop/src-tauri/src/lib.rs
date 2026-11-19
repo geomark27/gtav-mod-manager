@@ -36,6 +36,8 @@ fn build_state() -> AppState {
 pub fn run() {
     let result = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(build_state())
         .invoke_handler(tauri::generate_handler![
             commands::get_app_status,
@@ -51,6 +53,7 @@ pub fn run() {
             commands::inventory_summary,
             commands::capture_baseline,
             commands::cancel_operation,
+            commands::operation_status,
             commands::guard_status,
             commands::list_mods,
             commands::get_mod,

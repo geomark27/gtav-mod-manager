@@ -17,6 +17,7 @@ import type { InventoryPageDto } from "../bindings/InventoryPageDto";
 import type { InventorySummaryDto } from "../bindings/InventorySummaryDto";
 import type { ModDetailDto } from "../bindings/ModDetailDto";
 import type { ModDto } from "../bindings/ModDto";
+import type { OperationStatusDto } from "../bindings/OperationStatusDto";
 import type { PlanPreviewDto } from "../bindings/PlanPreviewDto";
 import type { ProfileDetailDto } from "../bindings/ProfileDetailDto";
 import type { ProfileDto } from "../bindings/ProfileDto";
@@ -75,6 +76,8 @@ export const commands = {
   captureBaseline: (id: string, trusted: boolean) =>
     invokeCommand<BaselineDto>("capture_baseline", { id, trusted }),
   cancelOperation: () => invokeCommand<void>("cancel_operation"),
+  /** Whether a heavy operation is running; the updater waits for it before restarting. */
+  operationStatus: () => invokeCommand<OperationStatusDto>("operation_status"),
   guardStatus: (installationId: string) =>
     invokeCommand<GuardStatusDto>("guard_status", { installationId }),
   listMods: (installationId: string) => invokeCommand<ModDto[]>("list_mods", { installationId }),

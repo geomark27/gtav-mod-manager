@@ -1,0 +1,6 @@
+# Pinned so local builds, CI and releases use the same compiler, rustfmt and clippy.
+# Update deliberately (in its own branch) and fix any new lint/format differences there.
+[toolchain]
+channel = "1.97.1"
+components = ["rustfmt", "clippy"]
+profile = "minimal"
