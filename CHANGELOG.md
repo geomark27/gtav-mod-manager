@@ -11,6 +11,8 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-18
+
 ### Added
 
 - Installations: finds GTA V Legacy and Enhanced installed through Steam, Epic or Rockstar — or takes a folder by hand — validates the structure and shows the edition, the game version and whether the folder can be written.
@@ -27,3 +29,6 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 - Dependencies: a mod can require other mods; they are enabled together in a single transaction.
 - Vault maintenance: garbage collection removes the vault copies no mod points to any more.
 - Windows installer and automatic updates: a per-user NSIS installer in English and Spanish that needs no administrator rights, and signed updates downloaded from GitHub releases. The installer has no code-signing certificate, so SmartScreen shows a warning the first time.
+
+[Unreleased]: https://github.com/geomark27/gtav-mod-manager/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/geomark27/gtav-mod-manager/releases/tag/v0.1.0
