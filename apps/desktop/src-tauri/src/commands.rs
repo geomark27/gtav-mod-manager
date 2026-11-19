@@ -8,9 +8,9 @@ use gmm_app::{
     AdoptPreviewDto, AdoptRequest, App, AppError, AppStatusDto, BaselineDto, Category,
     ConfirmImportRequest, DashboardDto, DiscoveredInstallationDto, DriftDto, ErrorCode,
     GuardStatusDto, ImportPreviewDto, InstallationDto, InventoryFilterDto, InventoryPageDto,
-    InventorySummaryDto, ModDetailDto, ModDto, PlanPreviewDto, ProfileDetailDto, ProfileDto,
-    ProfileEntryInput, ProgressDto, ProgressSink, RegisterInstallationRequest, ScanSummaryDto,
-    ThrottledSink, TransactionPageDto, VaultReportDto,
+    InventorySummaryDto, ModDetailDto, ModDto, OperationStatusDto, PlanPreviewDto,
+    ProfileDetailDto, ProfileDto, ProfileEntryInput, ProgressDto, ProgressSink,
+    RegisterInstallationRequest, ScanSummaryDto, ThrottledSink, TransactionPageDto, VaultReportDto,
     profile_name_suggestions as suggested_profile_names,
 };
 use tauri::{AppHandle, Emitter, State};
@@ -170,6 +170,12 @@ pub async fn cancel_operation(state: State<'_, AppState>) -> Result<(), AppError
         Ok(())
     })
     .await
+}
+
+/// Reports whether a heavy operation is running. The updater waits for it before restarting.
+#[tauri::command]
+pub fn operation_status(state: State<'_, AppState>) -> Result<OperationStatusDto, AppError> {
+    Ok(state.app()?.operation_status())
 }
 
 /// Reports the state of every guard (running game, writable folder, recovery) of an installation.
