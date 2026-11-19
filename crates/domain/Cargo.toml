@@ -1,0 +1,25 @@
+[package]
+name = "gmm-domain"
+description = "Domain model of GTA V Mod Manager: entities, value objects and state machines. No I/O."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+ts-rs = { workspace = true, features = ["no-serde-warnings"], optional = true }
+
+[features]
+# Exports the domain enums as TypeScript (ts-rs) into TS_RS_EXPORT_DIR.
+ts = ["dep:ts-rs"]
+
+[dev-dependencies]
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,18 @@
+[package]
+name = "gmm-testkit"
+description = "Test support for GTA V Mod Manager: fake game installations and disk snapshots."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+gmm-domain = { workspace = true }
+gmm-platform = { workspace = true }
+tempfile = { workspace = true }
+thiserror = { workspace = true }
+walkdir = { workspace = true }
+
+[lints]
+workspace = true

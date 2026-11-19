@@ -1,0 +1,124 @@
+# GTA V Enhanced catalog.
+# Values marked ASSUMPTION are unverified guesses (docs/roadmap.md) and are verified
+# against real installations in milestone M7.
+edition = "enhanced"
+executable = "GTA5_Enhanced.exe"              # ASSUMPTION A-01
+required_files = [                            # ASSUMPTION A-05
+    "GTA5_Enhanced.exe",
+    "PlayGTAV.exe",
+    "common.rpf",
+    "x64a.rpf",
+    "update/update.rpf",
+]
+steam_app_id = 3240220                        # ASSUMPTION A-02
+rockstar_registry_keys = [                    # ASSUMPTION A-04
+    'SOFTWARE\WOW6432Node\Rockstar Games\Grand Theft Auto V Enhanced',
+]
+trusted_publishers = [                        # ASSUMPTION A-06
+    "Rockstar Games, Inc.",
+    "Take-Two Interactive Software, Inc.",
+]
+
+# Original game files. ASSUMPTION A-05: refine with real installs (M7).
+[originals]
+files = [
+    "GTA5_Enhanced.exe",
+    "PlayGTAV.exe",
+    "GTAVLauncher.exe",
+    "bink2w64.dll",
+    "d3dcompiler_46.dll",
+    "d3dcsx_46.dll",
+    "GFSDK_ShadowLib.win64.dll",
+    "GFSDK_TXAA.win64.dll",
+    "GFSDK_TXAA_AlphaResolve.win64.dll",
+    "steam_api64.dll",
+    "x64a.rpf",
+    "common.rpf",
+]
+globs = ["*.rpf", "x64/**", "update/**", "ReadMe/**", "Redistributables/**", "_CommonRedist/**"]
+
+# Known mod patterns, first match wins. ASSUMPTION for Enhanced: same as Legacy.
+[[mod_patterns]]
+glob = "*.asi"
+category = "scripts_gameplay"
+label = "ASI plugin"
+
+[[mod_patterns]]
+glob = "dinput8.dll"
+category = "scripts_gameplay"
+label = "ASI loader"
+
+[[mod_patterns]]
+glob = "ScriptHookV.dll"
+category = "scripts_gameplay"
+label = "Script Hook V"
+
+[[mod_patterns]]
+glob = "ScriptHookVDotNet*"
+category = "scripts_gameplay"
+label = "Script Hook V .NET"
+
+[[mod_patterns]]
+glob = "scripts/**"
+category = "scripts_gameplay"
+label = "Scripts folder"
+
+[[mod_patterns]]
+glob = "plugins/**"
+category = "scripts_gameplay"
+label = "Plugins folder"
+
+[[mod_patterns]]
+glob = "*.lua"
+category = "scripts_gameplay"
+label = "Lua script"
+
+[[mod_patterns]]
+glob = "mods/**"
+category = "uncategorized"
+label = "OpenIV mods folder"
+
+[[mod_patterns]]
+glob = "*.oiv"
+category = "uncategorized"
+label = "OIV package"
+
+[[mod_patterns]]
+glob = "dxgi.dll"
+category = "graphics_textures"
+label = "Graphics injector"
+
+[[mod_patterns]]
+glob = "d3d11.dll"
+category = "graphics_textures"
+label = "Graphics injector"
+
+[[mod_patterns]]
+glob = "d3d12.dll"
+category = "graphics_textures"
+label = "Graphics injector"
+
+[[mod_patterns]]
+glob = "reshade-shaders/**"
+category = "graphics_textures"
+label = "ReShade"
+
+[[mod_patterns]]
+glob = "ReShade.ini"
+category = "graphics_textures"
+label = "ReShade"
+
+[[mod_patterns]]
+glob = "enbseries/**"
+category = "graphics_textures"
+label = "ENB"
+
+[[mod_patterns]]
+glob = "enbseries.ini"
+category = "graphics_textures"
+label = "ENB"
+
+[[mod_patterns]]
+glob = "enblocal.ini"
+category = "graphics_textures"
+label = "ENB"

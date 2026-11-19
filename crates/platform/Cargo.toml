@@ -1,0 +1,35 @@
+[package]
+name = "gmm-platform"
+description = "OS abstractions for GTA V Mod Manager: file system trait, fault injection, hashing, OS probes."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+thiserror = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+directories = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { workspace = true, features = ["Win32_Foundation", "Win32_Storage_FileSystem"] }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+# Own lints: identical to the workspace lints except that `unsafe` is allowed (FFI only,
+# every block documented with `// SAFETY:`).
+[lints.rust]
+unsafe_code = "allow"
+missing_docs = "warn"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+dbg_macro = "deny"
+undocumented_unsafe_blocks = "deny"

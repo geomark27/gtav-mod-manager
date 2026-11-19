@@ -1,0 +1,4 @@
+# Owned by the Tech Lead.
+[env]
+# ts-rs writes generated TypeScript bindings here when `cargo test -p gmm-app` runs.
+TS_RS_EXPORT_DIR = { value = "apps/desktop/src/bindings", relative = true }

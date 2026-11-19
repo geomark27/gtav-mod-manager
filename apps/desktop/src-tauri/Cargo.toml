@@ -1,0 +1,26 @@
+[package]
+name = "gmm-desktop"
+description = "Tauri 2 shell of GTA V Mod Manager: a thin command layer over gmm-app."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+name = "gmm_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { workspace = true }
+
+[dependencies]
+tauri = { workspace = true }
+tauri-plugin-dialog = { workspace = true }
+gmm-app = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+
+[lints]
+workspace = true

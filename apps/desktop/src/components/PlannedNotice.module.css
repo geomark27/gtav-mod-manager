@@ -1,0 +1,15 @@
+.notice {
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.title {
+  font-weight: 600;
+}
+
+.description {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+}

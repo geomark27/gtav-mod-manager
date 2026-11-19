@@ -1,0 +1,100 @@
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.renameForm {
+  display: flex;
+  flex: 1;
+  gap: var(--space-2);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.path,
+.mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  user-select: text;
+  overflow-wrap: anywhere;
+}
+
+.path {
+  margin-bottom: var(--space-1);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.notice {
+  margin: var(--space-2) 0;
+  color: var(--color-warning);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  align-items: flex-start;
+  margin-top: var(--space-3);
+}
+
+.candidates {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.candidate {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.problems {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-5);
+  color: var(--color-warning);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}

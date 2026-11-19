@@ -1,0 +1,72 @@
+# Root workspace manifest — owned by the Tech Lead. Agents: do not edit; report needed changes.
+[workspace]
+resolver = "3"
+members = ["crates/*", "apps/desktop/src-tauri"]
+# The Tauri shell (apps/desktop/src-tauri) is a member but stays out of
+# `default-members`, so `cargo test` works on WSL without WebKitGTK.
+default-members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+license = "UNLICENSED"
+publish = false
+
+[workspace.dependencies]
+# Internal crates
+gmm-domain = { path = "crates/domain" }
+gmm-platform = { path = "crates/platform" }
+gmm-store = { path = "crates/store" }
+gmm-scanner = { path = "crates/scanner" }
+gmm-engine = { path = "crates/engine" }
+gmm-app = { path = "crates/app" }
+gmm-testkit = { path = "crates/testkit" }
+gmm-archive = { path = "crates/archive" }
+
+# Core
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v7", "serde"] }
+sha2 = "0.11"
+hex = "0.4"
+rusqlite = { version = "0.43", features = ["bundled"] }
+toml = "1"
+zip = { version = "9", default-features = false, features = ["deflate-flate2-zlib-rs", "deflate64", "bzip2", "lzma"] }
+walkdir = "2"
+directories = "6"
+dunce = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"] }
+tracing-appender = "0.2"
+ts-rs = "12"
+sysinfo = "0.40"
+
+# Windows-only
+windows-sys = "0.61"
+winreg = "0.56"
+
+# Desktop shell
+tauri = "2"
+tauri-build = "2"
+tauri-plugin-dialog = "2"
+
+# Dev
+tempfile = "3"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+dbg_macro = "deny"
+
+[profile.dev.package."*"]
+opt-level = 1
