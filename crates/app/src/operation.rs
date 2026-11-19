@@ -54,6 +54,17 @@ pub struct ProgressDto {
     pub done: bool,
 }
 
+/// Whether a heavy operation currently holds the single operation slot.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct OperationStatusDto {
+    /// True while an operation is running.
+    pub busy: bool,
+    /// Kind of the running operation, or `null` when idle.
+    pub kind: Option<OperationKind>,
+}
+
 /// Receiver of progress events.
 pub trait ProgressSink: Send + Sync {
     /// Called for every progress snapshot, from the thread running the operation.
@@ -112,6 +123,7 @@ impl<S: ProgressSink> ProgressSink for ThrottledSink<S> {
 #[derive(Debug)]
 pub(crate) struct RunningOp {
     id: String,
+    kind: OperationKind,
     cancel: Arc<AtomicBool>,
 }
 
@@ -194,6 +206,7 @@ impl App {
         let cancel = Arc::new(AtomicBool::new(false));
         *slot = Some(RunningOp {
             id: id.clone(),
+            kind,
             cancel: Arc::clone(&cancel),
         });
         Ok(Operation {
@@ -218,6 +231,24 @@ impl App {
         let result = f(&op);
         op.finish();
         result
+    }
+
+    /// Reports whether an operation holds the slot and, if so, its kind.
+    ///
+    /// The UI uses this to keep an update from restarting the app while a scan,
+    /// transaction or import is running.
+    pub fn operation_status(&self) -> OperationStatusDto {
+        let slot = self.op.lock().unwrap_or_else(PoisonError::into_inner);
+        match slot.as_ref() {
+            Some(running) => OperationStatusDto {
+                busy: true,
+                kind: Some(running.kind),
+            },
+            None => OperationStatusDto {
+                busy: false,
+                kind: None,
+            },
+        }
     }
 
     /// Asks the running operation to stop. Does nothing when idle.
@@ -285,5 +316,47 @@ mod tests {
         );
         let v = serde_json::to_string(&OperationKind::Baseline).unwrap();
         assert_eq!(v, "\"baseline\"");
+    }
+
+    #[test]
+    fn operation_status_reports_idle_then_busy() {
+        let tmp = tempfile::TempDir::new().expect("tempdir");
+        let app = App::init_with(
+            crate::AppDirs::at(&tmp.path().join("data")),
+            crate::AppOptions::default(),
+        )
+        .expect("init");
+
+        let idle = app.operation_status();
+        assert!(!idle.busy);
+        assert_eq!(idle.kind, None);
+
+        let op = app
+            .begin_operation(OperationKind::Scan, &NullSink)
+            .expect("begin operation");
+        let busy = app.operation_status();
+        assert!(busy.busy);
+        assert_eq!(busy.kind, Some(OperationKind::Scan));
+        drop(op);
+
+        let idle = app.operation_status();
+        assert!(!idle.busy);
+        assert_eq!(idle.kind, None);
+    }
+
+    #[test]
+    fn operation_status_json_shape() {
+        let v = serde_json::to_value(OperationStatusDto {
+            busy: true,
+            kind: Some(OperationKind::Baseline),
+        })
+        .unwrap();
+        assert_eq!(v, serde_json::json!({"busy":true,"kind":"baseline"}));
+        let v = serde_json::to_value(OperationStatusDto {
+            busy: false,
+            kind: None,
+        })
+        .unwrap();
+        assert_eq!(v, serde_json::json!({"busy":false,"kind":null}));
     }
 }

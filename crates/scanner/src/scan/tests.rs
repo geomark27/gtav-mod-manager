@@ -442,6 +442,8 @@ fn with_owner_stamps_items() {
     );
 }
 
+// Unix only: Windows itself refuses to create these names, so they cannot appear there.
+#[cfg(unix)]
 #[test]
 fn unparsable_names_are_counted() {
     let i = modded(Edition::Legacy);
