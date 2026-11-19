@@ -12,3 +12,6 @@ apps/desktop/src-tauri/gen/
 /Cargo.lock.tmp
 /apps/desktop/package-lock.json.tmp
 /latest.json
+
+# Local runner config (opencode); not part of the product
+opencode.json
