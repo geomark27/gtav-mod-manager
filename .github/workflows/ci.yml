@@ -1,13 +1,11 @@
-# What must pass on every push and pull request to main and develop: Rust format, clippy and
-# tests; the UI (typecheck, tests, build); the Windows tests and the Tauri shell; and, on pull
-# requests, this branch's devlog entry.
+# Tests before a release: runs once on the promotion PR (develop → main), or by hand from the
+# Actions tab. Rust (Linux), UI, and the Windows tests + Tauri shell.
 name: CI
 
 on:
-  push:
-    branches: [main, develop]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -105,20 +103,3 @@ jobs:
 
       - name: Clippy of the Tauri shell
         run: cargo clippy -p gmm-desktop --all-targets -- -D warnings
-
-  devlog:
-    name: Devlog entry
-    # Only work branches carry an entry; the promotion PR (develop → main) has none.
-    if: github.event_name == 'pull_request' && github.base_ref == 'develop'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # Same check as `make devlog`: one valid entry per branch, part of the PR diff
-      # (.claude/skills/devlog/HOW-IT-WORKS.md §10).
-      - name: Verify the entry
-        env:
-          DEVLOG_BRANCH: ${{ github.head_ref }}
-        run: bash .claude/skills/devlog/scripts/verify.sh --base "origin/${{ github.base_ref }}"

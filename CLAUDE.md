@@ -13,7 +13,8 @@ With several agents, only the orchestrator writes the entry; subagents return a 
 CONTRIBUTION` block in their report (`agent:`, `what:`, `why:`, `files:`, `test:`, `follow-up:`)
 and the orchestrator consolidates it.
 
-`make devlog` checks the current branch's entry against `develop`; CI does the same on every PR.
+`make devlog` (part of `make check`) checks the current branch's entry against `develop`. CI runs
+only on the promotion PR to `main` (tests before a release), not on every branch.
 
 ## Branches and releases
 
