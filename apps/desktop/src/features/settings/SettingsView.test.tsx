@@ -1,7 +1,12 @@
 import { clearMocks, mockIPC } from "@tauri-apps/api/mocks";
 import { screen, within } from "@testing-library/react";
 import { renderWithProviders } from "../installations/testing";
+import { UpdatesProvider } from "../updates/useUpdater";
 import { SettingsView, STORY_MODE_NOTICE } from "./SettingsView";
+
+vi.mock("@tauri-apps/plugin-updater", () => ({ check: vi.fn(async () => null) }));
+vi.mock("@tauri-apps/plugin-process", () => ({ relaunch: vi.fn(async () => {}) }));
+vi.mock("@tauri-apps/api/app", () => ({ getVersion: vi.fn(async () => "0.1.0") }));
 
 afterEach(() => clearMocks());
 
@@ -11,6 +16,7 @@ describe("SettingsView", () => {
       if (cmd === "vault_report") {
         return { objectCount: 4, totalBytes: 2048, unreferenced: [], unreferencedBytes: 0, strayFiles: [] };
       }
+      if (cmd === "operation_status") return { busy: false, kind: null };
       return {
       appVersion: "0.1.0",
       dataDir: "/data",
@@ -25,7 +31,11 @@ describe("SettingsView", () => {
       recovery: { rolledBack: 1, committed: 2, needsAttention: 3, skipped: 4 },
       };
     });
-    renderWithProviders(<SettingsView />);
+    renderWithProviders(
+      <UpdatesProvider>
+        <SettingsView />
+      </UpdatesProvider>,
+    );
     expect(await screen.findByText("0.1.0")).toBeInTheDocument();
     expect(screen.getByText("/data/vault")).toBeInTheDocument();
     expect(screen.getByText("/data/logs")).toBeInTheDocument();
@@ -33,14 +43,19 @@ describe("SettingsView", () => {
     const rec = screen.getByRole("region", { name: "Startup recovery" });
     for (const n of ["1", "2", "3", "4"]) expect(within(rec).getByText(n)).toBeInTheDocument();
     expect(screen.getByText(STORY_MODE_NOTICE)).toBeInTheDocument();
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Updates" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Check for updates" })).toBeInTheDocument();
   });
 
   it("shows an error", async () => {
     mockIPC(() => {
       throw { code: "INTERNAL", message: "boom", hint: null, details: null };
     });
-    renderWithProviders(<SettingsView />);
+    renderWithProviders(
+      <UpdatesProvider>
+        <SettingsView />
+      </UpdatesProvider>,
+    );
     expect(await screen.findByText("INTERNAL")).toBeInTheDocument();
   });
 });
