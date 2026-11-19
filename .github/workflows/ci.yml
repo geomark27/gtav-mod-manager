@@ -58,6 +58,11 @@ jobs:
       - name: Install
         run: npm ci
 
+      # tauri build refuses mismatched crate/npm minors: catch it here, not at release time.
+      - name: Tauri crates and npm packages aligned
+        working-directory: .
+        run: bash scripts/check-tauri-versions.sh
+
       - name: Typecheck
         run: npm run typecheck
 

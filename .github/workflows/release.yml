@@ -43,6 +43,9 @@ jobs:
           [[ "$app_version" == "$cargo_version" ]] || { echo "::error::tauri.conf.json says $app_version and Cargo.toml says $cargo_version"; exit 1; }
           [[ "$ui_version" == "$cargo_version" ]] || { echo "::error::package.json says $ui_version and Cargo.toml says $cargo_version"; exit 1; }
 
+      - name: Tauri crates and npm packages are aligned
+        run: bash scripts/check-tauri-versions.sh
+
       - name: The updater key is configured
         run: |
           ! grep -q '"pubkey": "PENDING' apps/desktop/src-tauri/tauri.conf.json \
