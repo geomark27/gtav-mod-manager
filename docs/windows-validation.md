@@ -87,3 +87,16 @@ Trainer installed by hand:
 4. Dashboard → **Disable all mods (vanilla)**: mod files gone from the folder, *Vanilla mode
    active*, restore point listed in Profiles.
 5. **Restore my mods**: every file back and byte-identical to step 1.
+
+## 7. Phase 5 — before playing online (v0.3.0)
+
+On the same COPY as §6, with a trusted baseline captured right after "verify files":
+
+1. With mods enabled and one loose `.asi` not adopted: Dashboard → **Check only** → *things to
+   fix* lists the managed mods and the loose file; nothing in the folder changed.
+2. **Prepare for online** → managed mods disabled (one history entry), restore point saved; the
+   loose `.asi` is still listed under "No other mod files".
+3. Adopt it in Review → Detected mods, **Prepare for online** again → *No mod files found*.
+4. Open GTA V, press **Prepare for online** → "The mods were not disabled" with the running
+   process; close the game.
+5. **Restore my mods** → every file back and byte-identical.

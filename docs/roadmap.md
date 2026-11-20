@@ -206,6 +206,35 @@ Downloading mods or signatures from the internet, update detection for mods, Ope
 
 ---
 
+## Phase 5 — Online readiness (target v0.3.0)
+
+Status: **code complete** on `feature/online-check` (2026-11-19). Decided with the owner: the
+goal is a fast, trustworthy switch from story mode with mods to GTA Online without mods.
+
+### What it does
+
+- **Prepare for online** (Dashboard): in one operation it compares the disk with the database,
+  scans, applies vanilla mode (restore point + every managed mod disabled in one transaction)
+  and runs the checks. If the mods cannot be disabled (game running, drift), the checks still
+  run and the reason is shown.
+- **Check only**: the same scan and checks, read-only for the game folder.
+- Checks, in order: game and launchers closed · no recovery pending · no managed mod in the
+  game folder · no unmanaged mod files (candidates, drifted files, and mod-like files that are
+  "original" only because a baseline captured them) · unrecognized files (warning) · originals
+  unchanged against the baseline (warning when there is none) · no leftovers of interrupted
+  operations (warning).
+- Verdict: *No mod files found* / *N things to review* / *N things to fix*. It **never** states
+  that playing online is safe; originals are only reported (the fix is the launcher's verify).
+- Back to story mode = *Restore my mods* (Phase 4 R4).
+
+### Not done (candidates for later)
+
+- "Adopt and disable" directly from the check (today: link to Review → Detected mods).
+- Remembering the last result across restarts.
+- Checks outside the game folder (e.g. `Documents/Rockstar Games` settings, ReShade presets).
+
+---
+
 ## Assumptions to verify (closed in M7 at the latest)
 
 | ID   | Assumption                                                                        | Needed by |

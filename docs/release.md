@@ -66,7 +66,8 @@ With `bump=` or `ver=`, `make release`:
 1. checks that you are on `main` with a clean tree, updates `main` from `origin` (fast-forward
    only) and checks that `origin/main` has everything from `origin/develop`;
 2. checks that the tag of the new version is free;
-3. runs `fmt-check`, `clippy`, the Rust tests and the UI checks (typecheck, tests, build): no PR
+3. runs `fmt-check`, `clippy`, the Tauri shell check (`make shell`), the Rust tests and the UI
+   checks (typecheck, tests, build): no PR
    runs CI before this release, so the same checks run here. A failure stops it with nothing
    changed;
 4. asks once (`yes=1` skips the question), then writes the version to `Cargo.toml`,

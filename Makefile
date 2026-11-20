@@ -35,7 +35,7 @@ GH_OK = command -v gh >/dev/null && gh auth status >/dev/null 2>&1
 
 .PHONY: help sync start status push pr merge ship finish prune promote \
         version notes bump updater-key release \
-        fmt fmt-check lint test ui devlog check \
+        fmt fmt-check lint shell test ui devlog check \
         dev windows-sync
 
 ##@ Git
@@ -168,6 +168,11 @@ fmt-check: ## Check the Rust format without writing
 lint: ## clippy without warnings (default members; the Tauri shell is built on Windows)
 	cargo clippy --all-targets -- -D warnings
 
+shell: ## clippy of the Tauri shell for Windows (x86_64-pc-windows-gnu), checkable from WSL
+	@rustup target list --installed | grep -qx x86_64-pc-windows-gnu \
+		|| { echo "✗ missing Rust target: rustup target add x86_64-pc-windows-gnu" >&2; exit 1; }
+	cargo clippy -p gmm-desktop --target x86_64-pc-windows-gnu --all-targets -- -D warnings
+
 test: ## Rust tests of the workspace crates; run=<name> filters by name
 	cargo test $(run)
 
@@ -177,10 +182,11 @@ ui: ## Type-check, test and build the UI
 devlog: ## Verify this branch's devlog entry against develop
 	@bash .claude/skills/devlog/scripts/verify.sh --base $(BASE)
 
-check: ## What must pass before a commit and in CI: Tauri versions, fmt-check, lint, test, ui, devlog
+check: ## What must pass before a commit and in CI: Tauri versions, fmt-check, lint, shell, test, ui, devlog
 	@bash scripts/check-tauri-versions.sh
 	@$(MAKE) --no-print-directory fmt-check
 	@$(MAKE) --no-print-directory lint
+	@$(MAKE) --no-print-directory shell
 	@$(MAKE) --no-print-directory test
 	@$(MAKE) --no-print-directory ui
 	@$(MAKE) --no-print-directory devlog

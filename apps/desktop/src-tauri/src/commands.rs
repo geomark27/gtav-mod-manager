@@ -9,9 +9,9 @@ use gmm_app::{
     AppStatusDto, BaselineDto, Category, ConfirmImportRequest, DashboardDto, DetectedModsDto,
     DiscoveredInstallationDto, DriftDto, ErrorCode, GuardStatusDto, ImportPreviewDto,
     InstallationDto, InventoryFilterDto, InventoryPageDto, InventorySummaryDto, ModDetailDto,
-    ModDto, OperationStatusDto, PlanPreviewDto, ProfileDetailDto, ProfileDto, ProfileEntryInput,
-    ProgressDto, ProgressSink, RegisterInstallationRequest, ScanSummaryDto, ThrottledSink,
-    TransactionPageDto, VanillaStatusDto, VaultReportDto,
+    ModDto, OnlineCheckDto, OperationStatusDto, PlanPreviewDto, ProfileDetailDto, ProfileDto,
+    ProfileEntryInput, ProgressDto, ProgressSink, RegisterInstallationRequest, ScanSummaryDto,
+    ThrottledSink, TransactionPageDto, VanillaStatusDto, VaultReportDto,
     profile_name_suggestions as suggested_profile_names,
 };
 use tauri::{AppHandle, Emitter, State};
@@ -423,6 +423,36 @@ pub async fn adopt_detected(
 ) -> Result<AdoptDetectedResultDto, AppError> {
     let sink = progress_sink(handle);
     run_blocking(&state, move |app| app.adopt_detected(req, &sink)).await
+}
+
+/// Scans and lists what is left before playing online (read-only for the game folder),
+/// emitting `gmm://progress` events.
+#[tauri::command]
+pub async fn check_online_readiness(
+    handle: AppHandle,
+    state: State<'_, AppState>,
+    installation_id: String,
+) -> Result<OnlineCheckDto, AppError> {
+    let sink = progress_sink(handle);
+    run_blocking(&state, move |app| {
+        app.check_online_readiness(&installation_id, &sink)
+    })
+    .await
+}
+
+/// Scans, disables every mod (vanilla mode) and runs the online checks, emitting
+/// `gmm://progress` events.
+#[tauri::command]
+pub async fn prepare_for_online(
+    handle: AppHandle,
+    state: State<'_, AppState>,
+    installation_id: String,
+) -> Result<OnlineCheckDto, AppError> {
+    let sink = progress_sink(handle);
+    run_blocking(&state, move |app| {
+        app.prepare_for_online(&installation_id, &sink)
+    })
+    .await
 }
 
 /// Vanilla mode of an installation: restore point and how many mods are in the game.
