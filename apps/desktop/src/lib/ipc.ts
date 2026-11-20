@@ -1,4 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
+import type { AdoptDetectedRequest } from "../bindings/AdoptDetectedRequest";
+import type { AdoptDetectedResultDto } from "../bindings/AdoptDetectedResultDto";
 import type { AdoptPreviewDto } from "../bindings/AdoptPreviewDto";
 import type { AdoptRequest } from "../bindings/AdoptRequest";
 import type { AppError } from "../bindings/AppError";
@@ -6,6 +8,7 @@ import type { AppStatusDto } from "../bindings/AppStatusDto";
 import type { BaselineDto } from "../bindings/BaselineDto";
 import type { Category } from "../bindings/Category";
 import type { DashboardDto } from "../bindings/DashboardDto";
+import type { DetectedModsDto } from "../bindings/DetectedModsDto";
 import type { ConfirmImportRequest } from "../bindings/ConfirmImportRequest";
 import type { DiscoveredInstallationDto } from "../bindings/DiscoveredInstallationDto";
 import type { DriftDto } from "../bindings/DriftDto";
@@ -86,6 +89,12 @@ export const commands = {
   previewAdopt: (installationId: string, relPaths: string[]) =>
     invokeCommand<AdoptPreviewDto>("preview_adopt", { installationId, relPaths }),
   adoptMod: (req: AdoptRequest) => invokeCommand<ModDto>("adopt_mod", { req }),
+  /** Known mods by name and grouped candidates, from the last scan. */
+  detectMods: (installationId: string) =>
+    invokeCommand<DetectedModsDto>("detect_mods", { installationId }),
+  /** One transaction per mod, requirements first; failures are reported per mod. */
+  adoptDetected: (req: AdoptDetectedRequest) =>
+    invokeCommand<AdoptDetectedResultDto>("adopt_detected", { req }),
   /** `withDependencies` applies the dependency closure in the same transaction. */
   setModEnabled: (modId: string, enabled: boolean, withDependencies = false) =>
     invokeCommand<ModDto>(

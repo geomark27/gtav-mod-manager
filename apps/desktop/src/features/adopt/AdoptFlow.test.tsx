@@ -10,6 +10,12 @@ import { makeMod } from "../mods/testing";
 
 vi.mock("@tauri-apps/api/event", () => import("../../lib/eventMock"));
 
+/** Renders the Review page and opens the All files tab. */
+async function renderAllFiles() {
+  renderWithProviders(<ReviewPage />);
+  await userEvent.click(await screen.findByRole("tab", { name: "All files" }));
+}
+
 const ITEMS = [
   makeItem({ relPath: "GTA5.exe", classification: "original" }),
   makeItem({ relPath: "scripts/a.asi", classification: "candidate", size: 1024 }),
@@ -54,7 +60,7 @@ afterEach(() => clearMocks());
 describe("selection", () => {
   it("offers checkboxes only on candidate and unknown rows", async () => {
     setup();
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     await screen.findByText("scripts/a.asi");
     const boxes = screen.getAllByRole("checkbox").map((b) => b.getAttribute("aria-label"));
     expect(boxes).toEqual(["Select scripts/a.asi", "Select misc/b.bin"]);
@@ -63,7 +69,7 @@ describe("selection", () => {
 
   it("shows the count and can clear the selection", async () => {
     setup();
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     await userEvent.click(await screen.findByRole("checkbox", { name: "Select scripts/a.asi" }));
     await userEvent.click(screen.getByRole("checkbox", { name: "Select misc/b.bin" }));
     expect(screen.getByText("2 selected")).toBeInTheDocument();
@@ -85,7 +91,7 @@ describe("adopt dialog", () => {
     const s = setup();
     const gate = deferred<ModDto>();
     s.handlers.adopt_mod = () => gate.promise;
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     const dialog = await openDialog();
     expect(s.calls.find((c) => c.cmd === "preview_adopt")?.args).toEqual({
       installationId: makeInstallation().id,
@@ -138,7 +144,7 @@ describe("adopt dialog", () => {
       includesUnknown: true,
     });
     s.handlers.adopt_mod = () => makeMod();
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     const dialog = await openDialog();
     const adopt = await within(dialog).findByRole("button", { name: "Adopt" });
     expect(adopt).toBeDisabled();
@@ -161,7 +167,7 @@ describe("adopt dialog", () => {
       blocked: [{ relPath: "scripts/z.asi", reason: "Already managed by another mod." }],
     });
     s.handlers.adopt_mod = () => makeMod();
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     const dialog = await openDialog();
     const blocked = await within(dialog).findByRole("list", { name: "Blocked files" });
     expect(within(blocked).getByText("scripts/z.asi")).toBeInTheDocument();
@@ -181,7 +187,7 @@ describe("adopt dialog", () => {
       blocked: [{ relPath: "scripts/a.asi", reason: "Is a protected file." }],
       totalSize: 0,
     });
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     const dialog = await openDialog();
     expect(await within(dialog).findByText("None of the selected files can be adopted.")).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: "Adopt" })).toBeDisabled();
@@ -191,7 +197,7 @@ describe("adopt dialog", () => {
     const s = setup();
     s.handlers.adopt_mod = () =>
       Promise.reject({ code: "GAME_RUNNING", message: "The game is running.", hint: "Close it.", details: null });
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     const dialog = await openDialog();
     await userEvent.click(await within(dialog).findByRole("button", { name: "Adopt" }));
     expect(await within(dialog).findByText("GAME_RUNNING")).toBeInTheDocument();
@@ -205,7 +211,7 @@ describe("adopt dialog", () => {
     const s = setup();
     s.handlers.preview_adopt = () =>
       Promise.reject({ code: "INVALID_INPUT", message: "Nothing selected.", hint: null, details: null });
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     const dialog = await openDialog();
     expect(await within(dialog).findByText("Nothing selected.")).toBeInTheDocument();
     expect(within(dialog).queryByRole("button", { name: "Adopt" })).not.toBeInTheDocument();

@@ -76,6 +76,28 @@ impl ModSource {
     }
 }
 
+impl ModSource {
+    /// Recognized by the known-mod signature `signature_id`.
+    pub fn recognized(signature_id: impl Into<String>) -> Self {
+        Self {
+            kind: ModSourceKind::Recognized,
+            detail: Some(signature_id.into()),
+            sha256: None,
+            version: None,
+        }
+    }
+
+    /// Proposed by the grouping heuristics and adopted by the user.
+    pub const fn grouped() -> Self {
+        Self {
+            kind: ModSourceKind::Grouped,
+            detail: None,
+            sha256: None,
+            version: None,
+        }
+    }
+}
+
 impl Default for ModSource {
     fn default() -> Self {
         Self::manual()
@@ -178,6 +200,12 @@ mod tests {
         assert_eq!(z.kind, ModSourceKind::ZipImport);
         assert_eq!(z.detail.as_deref(), Some("Mod.zip"));
         assert_eq!(ModSource::zip_import("  ", None).detail, None);
+        let r = ModSource::recognized("menyoo");
+        assert_eq!(
+            (r.kind, r.detail.as_deref()),
+            (ModSourceKind::Recognized, Some("menyoo"))
+        );
+        assert_eq!(ModSource::grouped().kind, ModSourceKind::Grouped);
         // A mod serialized before provenance existed reads back as manual.
         let old: ModSource = serde_json::from_str(r#"{"kind":"manual"}"#).unwrap();
         assert_eq!(old, ModSource::manual());

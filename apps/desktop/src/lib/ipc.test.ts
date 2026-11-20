@@ -102,6 +102,8 @@ describe("ipc", () => {
     await commands.dashboard("i1");
     await commands.restoreMod("m1");
     await commands.readoptMod("m1");
+    await commands.detectMods("i1");
+    await commands.adoptDetected({ installationId: "i1", items: [], confirmUnknown: true });
     expect(calls).toEqual([
       ["list_profiles", { installationId: "i1" }],
       ["profile_name_suggestions", {}],
@@ -119,6 +121,8 @@ describe("ipc", () => {
       ["dashboard", { installationId: "i1" }],
       ["restore_mod", { modId: "m1" }],
       ["readopt_mod", { modId: "m1" }],
+      ["detect_mods", { installationId: "i1" }],
+      ["adopt_detected", { req: { installationId: "i1", items: [], confirmUnknown: true } }],
     ]);
   });
 

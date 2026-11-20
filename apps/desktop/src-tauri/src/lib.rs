@@ -74,6 +74,8 @@ pub fn run() {
             commands::delete_profile,
             commands::preview_apply_profile,
             commands::apply_profile,
+            commands::detect_mods,
+            commands::adopt_detected,
             commands::vanilla_status,
             commands::enter_vanilla,
             commands::restore_from_vanilla,

@@ -96,7 +96,7 @@ All code tasks by Sonnet 5.5 medium (1 round each unless noted); runners by open
 
 ## Phase 4 — Mod recognition (planned, target v0.2.0)
 
-Status: **in progress** (2026-11-19) — R4 and R5 done (PR #9); R1 and R2 done on `feature/mod-recognition` with unverified signatures (A-08 open); next R3. Decided with the owner after the first use of
+Status: **code complete** (2026-11-19) — R1–R5 done (PRs #9, #10 and `feature/detected-mods`). Open: R6 (A-08 file lists, Windows run on a copy, release v0.2.0). Decided with the owner after the first use of
 v0.1.0 on a real GTA V Enhanced installation that already had mods (Rampage Trainer).
 
 ### Problem
@@ -193,9 +193,9 @@ mod before playing online and a one-click **restore**.
 | R1 | — | M | scanner — **Done** (13 signatures, all `verified = false` until A-08; PE metadata rules deferred) |
 | R2 | R1 | S | scanner — **Done** (bases: root, `scripts`, `plugins`, `mods`; `update/**` is original) |
 | R5 | — | S | store + app — **Done** (schema v3; `installed_at` dropped: same as `created_at`) |
-| R3 | R1, R2, R5 | M | app + UI |
+| R3 | R1, R2, R5 | M | app + UI — **Done** (Review tab, one transaction per mod, dependencies linked, one rescan) |
 | R4 | — | S | app + UI — **Done** (restore point = `profiles.kind = 'restore_point'`) |
-| R6 | all | S | owner + TL |
+| R6 | all | S | owner + TL — checklist in `docs/windows-validation.md` §6 |
 
 R1, R4 and R5 can run in parallel (different crates/screens).
 

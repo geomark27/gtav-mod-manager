@@ -6,6 +6,7 @@ pub mod app;
 pub mod baseline;
 pub mod dashboard;
 pub mod dependencies;
+pub mod detect;
 pub mod drift;
 pub mod error;
 pub mod guards;
@@ -30,6 +31,11 @@ pub use app::{App, AppOptions};
 pub use baseline::BaselineDto;
 pub use dashboard::{DashboardDto, ModCountsDto};
 pub use dependencies::ModRefDto;
+pub use detect::{
+    AdoptDetectedRequest, AdoptDetectedResultDto, AmbiguousFileDto, DetectedAdoptItem,
+    DetectedModDto, DetectedModsDto, DetectionConfidence, RequirementDto, RequirementStatus,
+    SkippedAdoptionDto,
+};
 pub use error::{AppError, ErrorCode};
 pub use gmm_domain::Category;
 pub use gmm_platform::AppDirs;

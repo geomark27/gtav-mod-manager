@@ -5,6 +5,10 @@ import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { AdoptDialog } from "../features/adopt/AdoptDialog";
 import { BaselinePanel } from "../features/baseline/BaselinePanel";
+import { DetectedModsPanel } from "../features/detect/DetectedModsPanel";
+import { GuardBanner } from "../features/guards/GuardBanner";
+import { guardNotice } from "../features/guards/blocking";
+import { useGuardStatus } from "../features/guards/useGuardStatus";
 import { ClassChips } from "../features/inventory/ClassChips";
 import { InventoryTable } from "../features/inventory/InventoryTable";
 import { ScanControl } from "../features/inventory/ScanControl";
@@ -19,6 +23,8 @@ import { useSelectedInstallation } from "../features/installations/useInstallati
 import styles from "./Page.module.css";
 
 const PAGE_SIZE = 100;
+
+type Tab = "detected" | "files";
 const SEARCH_DEBOUNCE_MS = 250;
 
 /** Review page: scan the active installation and inspect every classified file. */
@@ -51,6 +57,57 @@ export function ReviewPage() {
 }
 
 function ReviewContent({ installationId, name }: { installationId: string; name: string }) {
+  const [tab, setTab] = useState<Tab>("detected");
+  const guard = useGuardStatus(installationId);
+  const notice = guard.data ? guardNotice(guard.data) : null;
+  const blockedReason = guard.data
+    ? (notice?.text ?? null)
+    : guard.error
+      ? null
+      : "Checking whether the game is running…";
+
+  return (
+    <>
+      <p className={styles.muted}>{name}</p>
+      <Card title="Scan">
+        <ScanControl installationId={installationId} />
+      </Card>
+      <Card title="Baseline">
+        <BaselinePanel installationId={installationId} />
+      </Card>
+      {notice ? <GuardBanner notice={notice} /> : null}
+      <div className={styles.tabs} role="tablist" aria-label="Review">
+        <button
+          type="button"
+          role="tab"
+          className={styles.tab}
+          aria-selected={tab === "detected"}
+          onClick={() => setTab("detected")}
+        >
+          Detected mods
+        </button>
+        <button
+          type="button"
+          role="tab"
+          className={styles.tab}
+          aria-selected={tab === "files"}
+          onClick={() => setTab("files")}
+        >
+          All files
+        </button>
+      </div>
+      {tab === "detected" ? (
+        <section className={styles.section} aria-label="Detected mods" role="tabpanel">
+          <DetectedModsPanel installationId={installationId} blockedReason={blockedReason} />
+        </section>
+      ) : (
+        <FilesTab installationId={installationId} />
+      )}
+    </>
+  );
+}
+
+function FilesTab({ installationId }: { installationId: string }) {
   const [classifications, setClassifications] = useState<Classification[]>([]);
   const [search, setSearch] = useState("");
   const [offset, setOffset] = useState(0);
@@ -90,14 +147,7 @@ function ReviewContent({ installationId, name }: { installationId: string; name:
 
   return (
     <>
-      <p className={styles.muted}>{name}</p>
-      <Card title="Scan">
-        <ScanControl installationId={installationId} />
-      </Card>
-      <Card title="Baseline">
-        <BaselinePanel installationId={installationId} />
-      </Card>
-      <section className={styles.section} aria-label="Files">
+      <section className={styles.section} aria-label="Files" role="tabpanel">
         <ClassChips
           counts={summary.data?.counts ?? []}
           selected={classifications}

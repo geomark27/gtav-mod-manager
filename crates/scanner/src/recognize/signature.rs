@@ -8,7 +8,7 @@
 use std::collections::HashSet;
 use std::str::FromStr;
 
-use gmm_domain::{Category, Edition};
+use gmm_domain::{Category, Edition, RelPath};
 use serde::Deserialize;
 
 use crate::catalog::Catalogs;
@@ -84,6 +84,18 @@ impl Signature {
     /// Number of `files` patterns that name exactly one path.
     pub fn literal_count(&self) -> usize {
         self.files.iter().filter(|g| g.is_literal()).count()
+    }
+
+    /// True when `files` meet every required constraint (each `files` pattern and each
+    /// `any_of` group matches at least one of them).
+    pub fn is_satisfied_by(&self, files: &[&RelPath]) -> bool {
+        self.files
+            .iter()
+            .all(|g| files.iter().any(|f| g.matches(f)))
+            && self
+                .any_of
+                .iter()
+                .all(|group| group.iter().any(|g| files.iter().any(|f| g.matches(f))))
     }
 
     /// Every pattern of the signature, required and optional.
