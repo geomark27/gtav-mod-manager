@@ -5,7 +5,7 @@ type: fix
 author: Marcos Ramos Jacome
 agents: claude:orchestrator
 pr: "#5"
-version: unreleased
+version: v0.2.0
 ---
 
 # Fix make finish, make promote and the Tauri version mismatch

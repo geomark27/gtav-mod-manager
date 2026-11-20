@@ -5,7 +5,7 @@ type: chore
 author: Marcos Ramos Jacome
 agents: claude:orchestrator
 pr: pending
-version: unreleased
+version: v0.2.0
 ---
 
 # CI once per release
