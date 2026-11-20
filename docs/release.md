@@ -4,15 +4,15 @@ How a change gets from a branch to a published installer. Everything runs from t
 root and is driven by `make` targets; `make help` lists them with their options.
 
 ```
-feature/*  ──PR──▶  develop  ──PR──▶  main  ──tag vX.Y.Z──▶  GitHub Actions  ──▶  release
-                                    (make promote)          (make release)        (installer +
-                                                                                  SHA256SUMS.txt +
-                                                                                  latest.json)
+feature/*  ──PR──▶  develop  ──PR──▶  main  ──make release bump=…──▶  GitHub Actions  ──▶  release
+                                (make promote)   (checks, version     (installer +
+                                                  commit on main,      SHA256SUMS.txt +
+                                                  tag vX.Y.Z)          latest.json)
 ```
 
 Two roles: anyone can open branches and PRs to `develop`; the **project owner confirms the merges**
-and is the only one who runs `make promote` and `make release`. Never commit on `main` or
-`develop`: they only receive merges.
+and is the only one who runs `make promote` and `make release`. Work is never committed on `main`
+or `develop`; the **only** commit made on `main` is the version commit of `make release bump=…`.
 
 ## 1. Day-to-day: a branch and its PR
 
@@ -52,53 +52,47 @@ already open) and asks first (`yes=1` skips the question). It **never merges**: 
 merge commit, by hand or from the web. `make release` refuses to run while `main` is behind
 `develop`.
 
-## 3. Raise the version
-
-The version lives in three files and must match everywhere:
-
-- `Cargo.toml` (`[workspace.package] version`) — the source of truth;
-- `apps/desktop/src-tauri/tauri.conf.json` (`version`);
-- `apps/desktop/package.json` (`version`).
-
-`make bump` writes all of them, the two root fields of `apps/desktop/package-lock.json` and the
-`gmm-*` entries of `Cargo.lock`, turns `[Unreleased]` in `CHANGELOG.md` into the version's section
-and closes the devlog for the version (`docs/devlog/releases/vX.Y.Z.md`). It never commits.
-
-From `develop` or `main` it does everything in one step: it fast-forwards `develop`, computes the
-new version from `develop`, creates `release/vX-Y-Z` from it (like `make start`) and bumps there.
+## 3. Release: one command, on main
 
 ```sh
-make bump bump=minor              # or: make bump ver=0.2.0, or ver=v0.2.0 → on release/v0-2-0
-#    DRY_RUN=1 make bump bump=minor   shows the branch, the version, the notes and how many
-#                                      devlog entries ship (run it from develop for the full view)
-make check
-git add -A && git commit -m "release: v0.2.0"
-make ship                         # to develop
+git switch main
+make release bump=minor     # or bump=patch|major, or ver=0.3.0
+#    DRY_RUN=1 make release bump=minor   shows the version, the notes and the devlog count
+make release                # only publishes the version already in main (no bump)
 ```
 
-On a work branch (`release/*`, `feature/*`, `fix/*`, `docs/*`) it bumps that branch as it is.
-`make bump` refuses with a dirty working tree, with both `bump=` and `ver=`, with a version lower
-than the current one, with a tag that already exists, and when the release branch already exists
-(switch to it and run `make bump ver=X.Y.Z` there). It warns when no devlog entry would ship with
-the version.
+With `bump=` or `ver=`, `make release`:
 
-Then promote and release (next two sections).
+1. checks that you are on `main` with a clean tree, updates `main` from `origin` (fast-forward
+   only) and checks that `origin/main` has everything from `origin/develop`;
+2. checks that the tag of the new version is free;
+3. runs `fmt-check`, `clippy`, the Rust tests and the UI checks (typecheck, tests, build): no PR
+   runs CI before this release, so the same checks run here. A failure stops it with nothing
+   changed;
+4. asks once (`yes=1` skips the question), then writes the version to `Cargo.toml`,
+   `tauri.conf.json`, `package.json`, the two root fields of `package-lock.json` and the `gmm-*`
+   entries of `Cargo.lock`, turns `[Unreleased]` in `CHANGELOG.md` into the version's section and
+   closes the devlog (`docs/devlog/releases/vX.Y.Z.md`);
+5. commits `release: vX.Y.Z` on `main` and pushes it;
+6. publishes as below, and finally fast-forwards `develop` to `main`, so the next branch starts
+   from the released version.
 
-The very first release is `make bump ver=0.1.0`: the version is already `0.1.0` everywhere, so only
-`[Unreleased]` is turned into `[0.1.0]` and the devlog is closed.
+Without `bump=`/`ver=` it skips steps 1–5 and publishes the version already in `origin/main`.
+
+`make release` refuses: off `main` when raising the version, with uncommitted changes, when local
+`main` has unpushed commits, when `develop` has commits that are not in `main` (run `make
+promote` first), with both `bump=` and `ver=`, with an empty `[Unreleased]`, with a version lower
+than the last tag and with a tag that already exists.
+
+`make bump` is only for work branches (it never commits); on `main` and `develop` it points to
+`make release bump=…`. The very first release was `make bump ver=0.1.0` on a release branch.
 
 ## 4. Publish
 
-```sh
-make promote      # merge develop into main
-make release      # tags origin/main as vX.Y.Z (DRY_RUN=1 make release simulates)
-```
-
-`make release` checks that `origin/main` has everything from `origin/develop`, that the three files
-agree with the tag, that the updater public key is in place, that the GitHub secret exists and that
-the tag is free. Then it creates the annotated tag on `origin/main`, pushes it and opens the
-release as a draft with the `CHANGELOG.md` section as notes. It asks before doing any of that
-(`yes=1` skips the question).
+Whichever way it started, `make release` checks that the three files agree with the tag, that
+the updater public key is in place, that the GitHub secret exists and that the tag is free. Then
+it creates the annotated tag on `origin/main`, pushes it and opens the release as a draft with the
+`CHANGELOG.md` section as notes.
 
 The tag starts `.github/workflows/release.yml`:
 
