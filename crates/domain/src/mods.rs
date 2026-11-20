@@ -23,6 +23,65 @@ persisted_enum!(
     }
 );
 
+persisted_enum!(
+    /// Where a mod came from (provenance).
+    ModSourceKind, "mod source kind" {
+        Recognized => "recognized",
+        Grouped => "grouped",
+        Manual => "manual",
+        ZipImport => "zip_import",
+    }
+);
+
+/// Provenance of a mod: how it entered the app and what it was made from.
+///
+/// `detail` is the signature id (`recognized`) or the archive file name (`zip_import`);
+/// `sha256` is the archive hash of a ZIP import; `version` is the signature or PE version when
+/// known. Mods created before provenance existed are `manual`.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct ModSource {
+    /// How the mod entered the app.
+    pub kind: ModSourceKind,
+    /// Signature id or archive file name.
+    #[serde(default)]
+    pub detail: Option<String>,
+    /// SHA-256 of the imported archive.
+    #[serde(default)]
+    pub sha256: Option<Sha256>,
+    /// Version of the mod when known.
+    #[serde(default)]
+    pub version: Option<String>,
+}
+
+impl ModSource {
+    /// Files picked and adopted by hand.
+    pub const fn manual() -> Self {
+        Self {
+            kind: ModSourceKind::Manual,
+            detail: None,
+            sha256: None,
+            version: None,
+        }
+    }
+
+    /// Imported from the archive `archive_name` whose content hash is `sha256`.
+    pub fn zip_import(archive_name: impl Into<String>, sha256: Option<Sha256>) -> Self {
+        let name = archive_name.into();
+        Self {
+            kind: ModSourceKind::ZipImport,
+            detail: Some(name).filter(|n| !n.trim().is_empty()),
+            sha256,
+            version: None,
+        }
+    }
+}
+
+impl Default for ModSource {
+    fn default() -> Self {
+        Self::manual()
+    }
+}
+
 /// Trims a mod name and rejects empty or over-long names (120 characters max).
 pub fn validate_mod_name(name: &str) -> Result<String> {
     let trimmed = name.trim();
@@ -56,6 +115,9 @@ pub struct Mod {
     pub mechanism: InstallMechanism,
     /// Free-form notes.
     pub notes: Option<String>,
+    /// Where the mod came from.
+    #[serde(default)]
+    pub source: ModSource,
     /// Creation time.
     pub created_at: DateTime<Utc>,
     /// Last update time.
@@ -100,6 +162,28 @@ mod tests {
     }
 
     #[test]
+    fn source_kind_contract() {
+        crate::macros::assert_enum_contract(
+            &ModSourceKind::ALL,
+            &["recognized", "grouped", "manual", "zip_import"],
+            ModSourceKind::as_str,
+        );
+    }
+
+    #[test]
+    fn source_constructors_and_defaults() {
+        assert_eq!(ModSource::default(), ModSource::manual());
+        assert_eq!(ModSource::manual().kind, ModSourceKind::Manual);
+        let z = ModSource::zip_import("Mod.zip", None);
+        assert_eq!(z.kind, ModSourceKind::ZipImport);
+        assert_eq!(z.detail.as_deref(), Some("Mod.zip"));
+        assert_eq!(ModSource::zip_import("  ", None).detail, None);
+        // A mod serialized before provenance existed reads back as manual.
+        let old: ModSource = serde_json::from_str(r#"{"kind":"manual"}"#).unwrap();
+        assert_eq!(old, ModSource::manual());
+    }
+
+    #[test]
     fn name_validation() {
         assert_eq!(validate_mod_name("  Cool Mod \n").unwrap(), "Cool Mod");
         assert!(matches!(
@@ -126,6 +210,7 @@ mod tests {
             state: ModState::Enabled,
             mechanism: InstallMechanism::LooseFiles,
             notes: None,
+            source: ModSource::zip_import("m.zip", Some(Sha256::from_bytes([2; 32]))),
             created_at: now,
             updated_at: now,
         };

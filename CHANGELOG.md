@@ -11,6 +11,11 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 
 ## [Unreleased]
 
+### Added
+
+- Vanilla mode: one button disables every managed mod after saving their states as a restore point, and "Restore my mods" brings them back in one step. The app says how many files it does not manage are still in the game folder, and never claims that playing online is safe.
+- Mod source: every mod shows where it came from — adopted by hand or imported from a ZIP (with the archive name and hash).
+
 ## [0.1.0] - 2026-11-18
 
 ### Added

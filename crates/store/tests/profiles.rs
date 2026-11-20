@@ -4,7 +4,9 @@
 mod common;
 
 use common::*;
-use gmm_domain::{DesiredState, InstallationId, ModId, ModState, Profile, ProfileEntry, ProfileId};
+use gmm_domain::{
+    DesiredState, InstallationId, ModId, ModState, Profile, ProfileEntry, ProfileId, ProfileKind,
+};
 use gmm_store::Error;
 
 fn profile(inst: InstallationId, name: &str) -> Profile {
@@ -12,6 +14,7 @@ fn profile(inst: InstallationId, name: &str) -> Profile {
         id: ProfileId::new(),
         installation_id: inst,
         name: name.into(),
+        kind: ProfileKind::User,
         created_at: ts(1),
         updated_at: ts(1),
     }
@@ -204,4 +207,59 @@ fn deleting_mod_removes_its_profile_entries() {
     let (_, entries) = db.get_profile(p.id).unwrap().unwrap();
     assert_eq!(entries, [entry(&p, b.id, DesiredState::Enabled)]);
     assert_eq!(db.list_profiles(inst).unwrap()[0].1, 1);
+}
+
+#[test]
+fn restore_point_is_unique_and_replaced() {
+    let (db, inst) = setup();
+    let a = adopt_mod(&db, inst, "A", ModState::Enabled, 1, 1);
+    assert!(db.restore_point(inst).unwrap().is_none());
+
+    // A user profile cannot be stored as the restore point.
+    let user = profile(inst, "User");
+    assert!(matches!(
+        db.replace_restore_point(&user, &[]),
+        Err(Error::InvalidState { .. })
+    ));
+
+    let mut first = profile(inst, "Before vanilla 1");
+    first.kind = ProfileKind::RestorePoint;
+    db.replace_restore_point(&first, &[entry(&first, a.id, DesiredState::Enabled)])
+        .unwrap();
+    let (p, entries) = db.restore_point(inst).unwrap().unwrap();
+    assert_eq!(
+        (p.id, p.kind, entries.len()),
+        (first.id, ProfileKind::RestorePoint, 1)
+    );
+
+    let mut second = profile(inst, "Before vanilla 2");
+    second.kind = ProfileKind::RestorePoint;
+    db.replace_restore_point(&second, &[]).unwrap();
+    let (p, entries) = db.restore_point(inst).unwrap().unwrap();
+    assert_eq!((p.id, entries.len()), (second.id, 0));
+    assert!(
+        db.get_profile(first.id).unwrap().is_none(),
+        "old one deleted"
+    );
+    // It is listed with the user profiles, with its kind.
+    let listed = db.list_profiles(inst).unwrap();
+    assert!(
+        listed
+            .iter()
+            .any(|(p, _)| p.id == second.id && p.kind == ProfileKind::RestorePoint)
+    );
+
+    // A failed replacement leaves the current restore point in place.
+    db.create_profile(&user, &[]).unwrap();
+    let mut clash = profile(inst, "user");
+    clash.kind = ProfileKind::RestorePoint;
+    assert!(matches!(
+        db.replace_restore_point(&clash, &[]),
+        Err(Error::Conflict { .. })
+    ));
+    assert_eq!(db.restore_point(inst).unwrap().unwrap().0.id, second.id);
+
+    // Restore points of other installations are separate.
+    let other = add_installation(&db, "D:/Other");
+    assert!(db.restore_point(other).unwrap().is_none());
 }

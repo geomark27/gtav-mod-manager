@@ -116,7 +116,7 @@ mod tests {
         let dirs = AppDirs::at(t.path());
         let app = App::init(dirs.clone()).unwrap();
         let s = app.status().unwrap();
-        assert_eq!(s.schema_version, 2);
+        assert_eq!(s.schema_version, gmm_store::LATEST_SCHEMA_VERSION);
         assert_eq!(s.journal_mode, "wal");
         assert_eq!(s.synchronous, "full");
         assert!(s.foreign_keys);

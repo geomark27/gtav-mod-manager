@@ -3,7 +3,9 @@
 use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 
-use gmm_domain::{Category, Mod, ModEntry, ModId, ModState, validate_mod_name};
+use gmm_domain::{
+    Category, Mod, ModEntry, ModId, ModSource, ModSourceKind, ModState, validate_mod_name,
+};
 use gmm_store::Database;
 use serde::Serialize;
 use ts_rs::TS;
@@ -24,6 +26,32 @@ pub struct ModConflictDto {
     pub mod_id: String,
     /// Its name.
     pub name: String,
+}
+
+/// Where a mod came from.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct ModSourceDto {
+    /// How the mod entered the app.
+    pub kind: ModSourceKind,
+    /// Signature id (`recognized`) or archive file name (`zip_import`).
+    pub detail: Option<String>,
+    /// SHA-256 of the imported archive.
+    pub sha256: Option<String>,
+    /// Version of the mod when known.
+    pub version: Option<String>,
+}
+
+impl From<&ModSource> for ModSourceDto {
+    fn from(s: &ModSource) -> Self {
+        Self {
+            kind: s.kind,
+            detail: s.detail.clone(),
+            sha256: s.sha256.as_ref().map(|h| h.as_str().to_owned()),
+            version: s.version.clone(),
+        }
+    }
 }
 
 /// A mod as shown by the UI.
@@ -52,6 +80,8 @@ pub struct ModDto {
     /// Number of mods this one directly depends on.
     #[ts(type = "number")]
     pub depends_on_count: u64,
+    /// Where the mod came from.
+    pub source: ModSourceDto,
     /// Creation time, RFC 3339 UTC.
     pub created_at: String,
     /// Last update time, RFC 3339 UTC.
@@ -193,6 +223,7 @@ fn mod_dto(
         total_size,
         conflicts_with,
         depends_on_count,
+        source: ModSourceDto::from(&m.source),
         created_at: rfc3339(m.created_at),
         updated_at: rfc3339(m.updated_at),
     }

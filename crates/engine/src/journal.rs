@@ -108,6 +108,7 @@ pub(crate) fn effects_from(row: &TransactionRow) -> Result<CommitEffects> {
                 state: a.initial_state,
                 mechanism: InstallMechanism::LooseFiles,
                 notes: a.notes.clone(),
+                source: a.source.clone(),
                 created_at: now,
                 updated_at: now,
             },

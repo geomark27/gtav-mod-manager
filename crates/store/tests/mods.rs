@@ -193,3 +193,40 @@ fn delete_mod_cascades() {
     assert_eq!(count(&db, "profile_entries"), 1);
     assert!(matches!(db.delete_mod(m.id), Err(Error::NotFound { .. })));
 }
+
+#[test]
+fn provenance_round_trips() {
+    use gmm_domain::{ModSource, ModSourceKind, TransactionKind, TransactionStatus};
+    use gmm_store::CommitEffects;
+
+    let (db, inst) = setup();
+    let manual = adopt_mod(&db, inst, "Manual", ModState::Enabled, 1, 1);
+    assert_eq!(
+        db.get_mod(manual.id).unwrap().unwrap().source,
+        ModSource::manual()
+    );
+
+    let tx = new_tx(&db, inst, TransactionKind::Adopt, 2);
+    db.set_transaction_status(tx, TransactionStatus::Committing, None, ts(2))
+        .unwrap();
+    let mut m = new_mod(inst, "Zipped", ModState::Disabled);
+    m.source = ModSource {
+        version: Some("1.2".into()),
+        ..ModSource::zip_import("Mod v1.2.zip", Some(sha(9)))
+    };
+    db.commit_transaction(
+        tx,
+        &CommitEffects {
+            adopt: Some(adopt(&m, &[("z.asi", 2)])),
+            vault_objects: vec![(sha(2), 10)],
+            ..CommitEffects::default()
+        },
+        ts(2),
+    )
+    .unwrap();
+    let back = db.get_mod(m.id).unwrap().unwrap();
+    assert_eq!(back.source, m.source);
+    assert_eq!(back.source.kind, ModSourceKind::ZipImport);
+    let listed = db.list_mods(inst).unwrap();
+    assert!(listed.iter().any(|x| x.id == m.id && x.source == m.source));
+}

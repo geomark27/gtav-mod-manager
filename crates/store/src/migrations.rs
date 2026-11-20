@@ -8,10 +8,14 @@ use crate::error::{Error, Result};
 const MIGRATIONS: &[(u32, &str)] = &[
     (1, include_str!("../migrations/0001_initial.sql")),
     (2, include_str!("../migrations/0002_dependencies.sql")),
+    (
+        3,
+        include_str!("../migrations/0003_provenance_restore_point.sql"),
+    ),
 ];
 
 /// Highest schema version this build understands.
-pub const LATEST_SCHEMA_VERSION: u32 = 2;
+pub const LATEST_SCHEMA_VERSION: u32 = 3;
 
 /// Reads `PRAGMA user_version`.
 pub(crate) fn current_version(conn: &Connection) -> Result<u32> {

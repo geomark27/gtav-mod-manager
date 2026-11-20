@@ -48,8 +48,8 @@ fn count(c: &Connection, table: &str) -> i64 {
 #[test]
 fn fresh_database_has_version_and_tables() {
     let (_d, path, db) = fresh();
-    assert_eq!(db.schema_version().expect("v"), 2);
-    assert_eq!(LATEST_SCHEMA_VERSION, 2);
+    assert_eq!(db.schema_version().expect("v"), 3);
+    assert_eq!(LATEST_SCHEMA_VERSION, 3);
     let c = raw(&path);
     let mut stmt = c
         .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
@@ -94,7 +94,7 @@ fn reopen_is_idempotent_and_preserves_data() {
     insert_installation(&raw(&path));
     drop(db);
     let db = Database::open(&path).expect("reopen");
-    assert_eq!(db.schema_version().expect("v"), 2);
+    assert_eq!(db.schema_version().expect("v"), 3);
     assert_eq!(count(&raw(&path), "installations"), 1);
 }
 
@@ -108,7 +108,7 @@ fn newer_schema_is_rejected() {
     match Database::open(&path) {
         Err(Error::SchemaTooNew {
             found: 99,
-            supported: 2,
+            supported: 3,
         }) => {}
         other => panic!("unexpected: {other:?}"),
     }
@@ -204,7 +204,7 @@ fn delete_installation_with_transaction_is_restricted() {
 #[test]
 fn in_memory_reaches_latest_version() {
     let db = Database::open_in_memory().expect("open");
-    assert_eq!(db.schema_version().expect("v"), 2);
+    assert_eq!(db.schema_version().expect("v"), 3);
     assert!(db.pragma_snapshot().expect("snap").foreign_keys);
 }
 
@@ -222,7 +222,7 @@ fn migration_from_v1_preserves_data_and_adds_dependencies() {
         insert_mod(&c);
     }
     let db = Database::open(&path).expect("migrate");
-    assert_eq!(db.schema_version().expect("v"), 2);
+    assert_eq!(db.schema_version().expect("v"), 3);
     let c = raw(&path);
     assert_eq!(count(&c, "installations"), 1);
     assert_eq!(count(&c, "mods"), 1);
@@ -231,4 +231,59 @@ fn migration_from_v1_preserves_data_and_adds_dependencies() {
         "INSERT INTO mod_dependencies VALUES ({MOD}, {MOD}, {TS});"
     ));
     assert!(self_dep.is_err(), "self dependency must violate the CHECK");
+}
+
+#[test]
+fn migration_from_v2_backfills_provenance_and_profile_kind() {
+    let dir = TempDir::new().expect("tempdir");
+    let path = dir.path().join("gmm.sqlite3");
+    {
+        let c = raw(&path);
+        c.execute_batch(include_str!("../migrations/0001_initial.sql"))
+            .expect("v1 schema");
+        c.execute_batch(include_str!("../migrations/0002_dependencies.sql"))
+            .expect("v2 schema");
+        c.execute_batch("PRAGMA user_version = 2;")
+            .expect("version");
+        insert_installation(&c);
+        insert_mod(&c);
+        c.execute_batch(&format!(
+            "INSERT INTO profiles (id, installation_id, name, created_at, updated_at)
+             VALUES ('00000000-0000-7000-8000-000000000010', {INST}, 'P', {TS}, {TS});"
+        ))
+        .expect("profile");
+    }
+    let db = Database::open(&path).expect("migrate");
+    assert_eq!(db.schema_version().expect("v"), 3);
+    let c = raw(&path);
+    let (kind, detail): (String, Option<String>) = c
+        .query_row("SELECT source_kind, source_detail FROM mods", [], |r| {
+            Ok((r.get(0)?, r.get(1)?))
+        })
+        .expect("mod");
+    assert_eq!((kind.as_str(), detail), ("manual", None));
+    let pkind: String = c
+        .query_row("SELECT kind FROM profiles", [], |r| r.get(0))
+        .expect("profile kind");
+    assert_eq!(pkind, "user");
+
+    let bad_source = c.execute_batch("UPDATE mods SET source_kind = 'bogus';");
+    assert!(bad_source.is_err(), "source_kind must violate the CHECK");
+    let bad_kind = c.execute_batch("UPDATE profiles SET kind = 'bogus';");
+    assert!(bad_kind.is_err(), "profile kind must violate the CHECK");
+
+    // At most one restore point per installation.
+    c.execute_batch(&format!(
+        "INSERT INTO profiles (id, installation_id, name, created_at, updated_at, kind)
+         VALUES ('00000000-0000-7000-8000-000000000011', {INST}, 'R1', {TS}, {TS}, 'restore_point');"
+    ))
+    .expect("first restore point");
+    let second = c.execute_batch(&format!(
+        "INSERT INTO profiles (id, installation_id, name, created_at, updated_at, kind)
+         VALUES ('00000000-0000-7000-8000-000000000012', {INST}, 'R2', {TS}, {TS}, 'restore_point');"
+    ));
+    assert!(
+        second.is_err(),
+        "a second restore point must violate the index"
+    );
 }

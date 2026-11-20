@@ -25,9 +25,11 @@ pub use installation::{
     BaselineTrust, DistributionPlatform, Installation, InstallationStatus, root_key,
 };
 pub use inventory::{Classification, Evidence, InventoryItem};
-pub use mods::{InstallMechanism, Mod, ModEntry, ModState, validate_mod_name};
+pub use mods::{
+    InstallMechanism, Mod, ModEntry, ModSource, ModSourceKind, ModState, validate_mod_name,
+};
 pub use profile::{
-    DesiredState, Profile, ProfileEntry, SUGGESTED_PROFILE_NAMES, VANILLA_PROFILE_NAME,
+    DesiredState, Profile, ProfileEntry, ProfileKind, SUGGESTED_PROFILE_NAMES, VANILLA_PROFILE_NAME,
 };
 pub use rel_path::RelPath;
 pub use sha256::Sha256;

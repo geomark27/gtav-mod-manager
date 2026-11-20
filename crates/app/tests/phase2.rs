@@ -107,6 +107,13 @@ fn import_happy_path_then_enable_places_files() {
     assert_eq!(m.state, ModState::Disabled);
     assert_eq!(m.entry_count, 3);
     assert_eq!(m.notes.as_deref(), Some("from a zip"));
+    // Provenance: the archive name and hash.
+    let zip_sha =
+        gmm_platform::sha256_file(&gmm_platform::StdFs::new(), &newmod_zip(&e)).expect("zip hash");
+    assert_eq!(m.source.kind, gmm_domain::ModSourceKind::ZipImport);
+    assert_eq!(m.source.detail.as_deref(), Some("New Mod v1.zip"));
+    assert_eq!(m.source.sha256.as_deref(), Some(zip_sha.as_str()));
+    assert_eq!(m.source.version, None);
     assert_eq!(staging_entries(&e), 0, "staging deleted after import");
     assert_eq!(snapshot(&e).diff(&before), vec![], "game folder untouched");
     let history = e.app.list_transactions(&e.id, 1, 0).expect("history");
