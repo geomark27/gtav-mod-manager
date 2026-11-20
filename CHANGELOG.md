@@ -11,6 +11,8 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-19
+
 ### Added
 
 - Vanilla mode: one button disables every managed mod after saving their states as a restore point, and "Restore my mods" brings them back in one step. The app says how many files it does not manage are still in the game folder, and never claims that playing online is safe.
@@ -36,5 +38,6 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 - Vault maintenance: garbage collection removes the vault copies no mod points to any more.
 - Windows installer and automatic updates: a per-user NSIS installer in English and Spanish that needs no administrator rights, and signed updates downloaded from GitHub releases. The installer has no code-signing certificate, so SmartScreen shows a warning the first time.
 
-[Unreleased]: https://github.com/geomark27/gtav-mod-manager/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/geomark27/gtav-mod-manager/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/geomark27/gtav-mod-manager/releases/tag/v0.1.0
