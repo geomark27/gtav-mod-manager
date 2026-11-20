@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
-# Set the version of GTA V Mod Manager on a work branch (it never commits). Run from develop or
-# main, it first creates release/vX-Y-Z from an up-to-date develop and bumps there:
+# Set the version of GTA V Mod Manager (it never commits). On main it is run by `make release
+# bump=…`, which commits and publishes; `make bump` alone works on work branches:
 #   - writes the version to the root Cargo.toml ([workspace.package]), tauri.conf.json,
 #     package.json, the two root fields of package-lock.json and the gmm-* entries of Cargo.lock;
 #   - turns [Unreleased] in CHANGELOG.md into the new version and updates the links at the end;
 #   - closes the devlog for the version (docs/devlog/releases/vX.Y.Z.md).
-# After that: make check · commit · make ship (to develop) · make promote · make release.
+# To publish a new version: on main, make release bump=patch|minor|major (see docs/release.md).
 #
-# Usage: scripts/bump.sh <patch|minor|major|""> [X.Y.Z] [--dry-run]
+# Usage: scripts/bump.sh <patch|minor|major|""> [X.Y.Z] [--dry-run|--print-version]
+#   --print-version                    only print the target version (used by release.sh)
+#   BUMP_IN_PLACE=1                    allow main (set by release.sh)
 #   make bump bump=patch|minor|major   raise that part of the current version
 #   make bump ver=X.Y.Z                exact version (the "v" is optional); it may be the current
 #                                      one only when its tag does not exist yet (first release)
@@ -21,7 +23,10 @@ step() { echo "→ $*"; }
 bump=${1:-}
 version=${2#v}
 dry_run=false
+print_version=false
 [[ ${3:-} == "--dry-run" ]] && dry_run=true
+[[ ${3:-} == "--print-version" ]] && print_version=true
+in_place=false
 
 # [workspace.package] version of the Cargo.toml read on stdin.
 workspace_version() {
@@ -48,38 +53,25 @@ target_version() {
 branch=$(git branch --show-current)
 case "$branch" in
   feature/*|fix/*|docs/*|release/*) ;;
-  main|develop)
-    # main and develop only receive merges: the bump goes on its own release branch, cut
-    # from develop (the version is computed from develop, which is what will ship).
-    if ! $dry_run; then
-      [[ -z $(git status --porcelain) ]] \
-        || die "there are uncommitted changes: commit or stash them before bumping"
-      make --no-print-directory sync
-    fi
-    base=$(git show develop:Cargo.toml | workspace_version)
-    [[ $base =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "could not read the version of develop's Cargo.toml"
-    target=$(target_version "$base") || exit 1
-    [[ $target =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] \
-      || die "give the version: make bump bump=patch|minor|major  (or ver=X.Y.Z)"
-    topic="v${target//./-}"
-    if git show-ref --verify --quiet "refs/heads/release/$topic"; then
-      die "release/$topic already exists: git switch release/$topic, then make bump ver=$target"
-    fi
-    if $dry_run; then
-      echo "→ Would create release/$topic from develop and bump it to $target there."
-      if [[ $branch != develop ]]; then
-        echo "  (Run the dry run from develop to preview the notes and the devlog too.)"
-        exit 0
-      fi
+  main)
+    if [[ ${BUMP_IN_PLACE:-} == 1 ]]; then
+      in_place=true
     else
-      step "Creating release/$topic from develop"
-      make --no-print-directory start name="$topic" type=release
-      exec bash scripts/bump.sh "" "$target"
+      die "on main the version is raised and published in one step: make release bump=patch|minor|major (or ver=X.Y.Z)"
     fi
     ;;
-  "") die "detached HEAD: switch to develop or to a work branch first" ;;
+  develop) die "releases are made from main: git switch main, then make release bump=patch|minor|major" ;;
+  "") die "detached HEAD: switch to main or to a work branch first" ;;
   *) die "'$branch' is not a work branch (feature/*, fix/*, docs/* or release/*)" ;;
 esac
+if $print_version; then
+  current=$(workspace_version < Cargo.toml)
+  version=$(target_version "$current") || exit 1
+  [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+    || die "give the version: bump=patch|minor|major (or ver=X.Y.Z)"
+  echo "$version"
+  exit 0
+fi
 if [[ -n $(git status --porcelain) ]]; then
   # A dry run only reads, so it is allowed with a dirty tree; the real run needs a clean one.
   if $dry_run; then
@@ -257,4 +249,4 @@ fi
 
 echo
 echo "✓ Version $version is in the working tree (nothing committed)."
-echo "  Review the diff, then: make check · commit · make ship"
+$in_place || echo "  Review the diff, then: make check · commit · make ship"
