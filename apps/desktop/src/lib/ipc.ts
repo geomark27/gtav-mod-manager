@@ -20,6 +20,7 @@ import type { InventoryPageDto } from "../bindings/InventoryPageDto";
 import type { InventorySummaryDto } from "../bindings/InventorySummaryDto";
 import type { ModDetailDto } from "../bindings/ModDetailDto";
 import type { ModDto } from "../bindings/ModDto";
+import type { OnlineCheckDto } from "../bindings/OnlineCheckDto";
 import type { OperationStatusDto } from "../bindings/OperationStatusDto";
 import type { PlanPreviewDto } from "../bindings/PlanPreviewDto";
 import type { ProfileDetailDto } from "../bindings/ProfileDetailDto";
@@ -144,6 +145,12 @@ export const commands = {
   /** `profileId` is a profile UUID or `"vanilla"`. */
   applyProfile: (installationId: string, profileId: string) =>
     invokeCommand<ModDto[]>("apply_profile", { installationId, profileId }),
+  /** Scans and lists what is left before playing online; never changes the game folder. */
+  checkOnlineReadiness: (installationId: string) =>
+    invokeCommand<OnlineCheckDto>("check_online_readiness", { installationId }),
+  /** Scans, disables every mod (vanilla mode) and runs the online checks. */
+  prepareForOnline: (installationId: string) =>
+    invokeCommand<OnlineCheckDto>("prepare_for_online", { installationId }),
   vanillaStatus: (installationId: string) =>
     invokeCommand<VanillaStatusDto>("vanilla_status", { installationId }),
   /** Saves a restore point, then disables every mod in one transaction. */

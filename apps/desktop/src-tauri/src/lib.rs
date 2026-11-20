@@ -76,6 +76,8 @@ pub fn run() {
             commands::apply_profile,
             commands::detect_mods,
             commands::adopt_detected,
+            commands::check_online_readiness,
+            commands::prepare_for_online,
             commands::vanilla_status,
             commands::enter_vanilla,
             commands::restore_from_vanilla,
