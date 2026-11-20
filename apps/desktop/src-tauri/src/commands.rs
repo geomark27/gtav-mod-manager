@@ -9,9 +9,9 @@ use gmm_app::{
     AppStatusDto, BaselineDto, Category, ConfirmImportRequest, DashboardDto, DetectedModsDto,
     DiscoveredInstallationDto, DriftDto, ErrorCode, GuardStatusDto, ImportPreviewDto,
     InstallationDto, InventoryFilterDto, InventoryPageDto, InventorySummaryDto, ModDetailDto,
-    ModDto, OperationStatusDto, PlanPreviewDto, ProfileDetailDto, ProfileDto, ProfileEntryInput,
-    ProgressDto, ProgressSink, RegisterInstallationRequest, ScanSummaryDto, ThrottledSink,
-    TransactionPageDto, VanillaStatusDto, VaultReportDto,
+    ModDto, OnlineCheckDto, OperationStatusDto, PlanPreviewDto, ProfileDetailDto, ProfileDto,
+    ProfileEntryInput, ProgressDto, ProgressSink, RegisterInstallationRequest, ScanSummaryDto,
+    ThrottledSink, TransactionPageDto, VanillaStatusDto, VaultReportDto,
     profile_name_suggestions as suggested_profile_names,
 };
 use tauri::{AppHandle, Emitter, State};
