@@ -1,0 +1,8 @@
+# ENBSeries for GTA V (D3D11 proxy). Legacy only. ASSUMPTION A-08.
+id = "enb"
+name = "ENBSeries"
+category = "graphics_textures"
+editions = ["legacy"]
+verified = false
+files = ["enblocal.ini", "d3d11.dll"]
+optional = ["enbseries.ini", "enbseries/**", "enbadaptation.fx", "enbbloom.fx", "enbeffect.fx", "enbeffectprepass.fx", "enblens.fx", "enbdepthoffield.fx"]

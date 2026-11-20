@@ -1,0 +1,9 @@
+# ReShade: post-processing injector (DXGI, D3D11 or D3D12 proxy). ASSUMPTION A-08.
+id = "reshade"
+name = "ReShade"
+category = "graphics_textures"
+editions = ["legacy", "enhanced"]
+verified = false
+files = ["ReShade.ini"]
+any_of = [["dxgi.dll", "d3d11.dll", "d3d12.dll"]]
+optional = ["ReShade.log", "ReShadePreset.ini", "reshade-shaders/**", "reshade-presets/**"]

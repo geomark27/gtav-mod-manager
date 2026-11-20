@@ -1,0 +1,9 @@
+# Simple Trainer for GTA V (sjaak327). ASSUMPTION A-08.
+id = "simple-trainer"
+name = "Simple Trainer"
+category = "scripts_gameplay"
+editions = ["legacy", "enhanced"]
+requires = ["script-hook-v", "asi-loader"]
+verified = false
+files = ["trainerv.asi"]
+optional = ["trainerv.ini", "trainerv/**"]

@@ -1,0 +1,9 @@
+# LemonUI for Script Hook V .NET (SHVDN2 and SHVDN3 builds). ASSUMPTION A-08.
+id = "lemonui"
+name = "LemonUI"
+category = "scripts_gameplay"
+editions = ["legacy", "enhanced"]
+requires = ["script-hook-v-dotnet"]
+verified = false
+files = ["scripts/LemonUI.SHVDN*.dll"]
+optional = ["scripts/LemonUI.SHVDN*.xml", "scripts/LemonUI.SHVDN*.pdb"]

@@ -1,0 +1,9 @@
+# NativeUI: menu library for Script Hook V .NET scripts. ASSUMPTION A-08.
+id = "nativeui"
+name = "NativeUI"
+category = "scripts_gameplay"
+editions = ["legacy", "enhanced"]
+requires = ["script-hook-v-dotnet"]
+verified = false
+files = ["scripts/NativeUI.dll"]
+optional = ["scripts/NativeUI.xml", "scripts/NativeUI.pdb"]
