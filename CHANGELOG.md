@@ -11,6 +11,8 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-20
+
 ### Added
 
 - Before playing online: the Dashboard's "Prepare for online" disables every mod, scans the game folder and lists anything left that could be a mod — unmanaged loaders and plugins, unrecognized files, modified original files, leftovers — with how to fix each one. "Check only" lists them without changing anything. It never claims that playing online is safe.
@@ -42,6 +44,7 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 - Vault maintenance: garbage collection removes the vault copies no mod points to any more.
 - Windows installer and automatic updates: a per-user NSIS installer in English and Spanish that needs no administrator rights, and signed updates downloaded from GitHub releases. The installer has no code-signing certificate, so SmartScreen shows a warning the first time.
 
-[Unreleased]: https://github.com/geomark27/gtav-mod-manager/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/geomark27/gtav-mod-manager/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/geomark27/gtav-mod-manager/releases/tag/v0.1.0

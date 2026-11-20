@@ -5,7 +5,7 @@ type: fix
 author: Marcos Ramos Jacome
 agents: claude:orchestrator
 pr: pending
-version: unreleased
+version: v0.3.0
 ---
 
 # Tauri shell: missing import and a check from WSL
