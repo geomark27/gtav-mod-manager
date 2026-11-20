@@ -62,3 +62,28 @@ Copy a small subset that is structurally valid (or use `gmm-testkit`-style fake 
 `apps\desktop\src-tauri\target\release\bundle\nsis\` (or the workspace `target\`). Install,
 run, uninstall; the vault and database stay in `%LOCALAPPDATA%\GtavModManager` (by design —
 removing them is a manual decision).
+
+## 6. Phase 4 — mod recognition (v0.2.0)
+
+**A-08 (read-only, real installation).** In a Windows terminal, from each game root (Legacy
+and Enhanced) — this only lists names, it changes nothing:
+
+```
+dir /s /b /a-d > C:\temp\gta-<edition>-files.txt
+```
+
+Send the lists (they contain no personal data beyond folder names). For every mod you have
+installed, the Tech Lead compares the real names with `crates/scanner/catalog/mods/<id>.toml`,
+fixes the patterns and sets `verified = true`.
+
+**Flow on a COPY** (section 4 rules) with Script Hook V, Script Hook V .NET and Rampage
+Trainer installed by hand:
+
+1. Record hashes: `certutil -hashfile <file> SHA256` for every mod file (or keep a zip).
+2. Review → scan → **Detected mods**: each mod shown by name with its requirements;
+   loose files grouped; nothing from the game listed.
+3. **Adopt selected**: one history entry per mod; Mods page shows the dependencies
+   (Rampage → Script Hook V .NET → Script Hook V / ASI Loader) and “Source: Recognized as …”.
+4. Dashboard → **Disable all mods (vanilla)**: mod files gone from the folder, *Vanilla mode
+   active*, restore point listed in Profiles.
+5. **Restore my mods**: every file back and byte-identical to step 1.

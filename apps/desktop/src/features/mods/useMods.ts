@@ -18,6 +18,8 @@ export function invalidateModData(client: QueryClient, installationId: string): 
     client.invalidateQueries({ queryKey: ["transactions", installationId] }),
     client.invalidateQueries({ queryKey: ["profiles", installationId] }),
     client.invalidateQueries({ queryKey: ["profile"] }),
+    client.invalidateQueries({ queryKey: ["vanilla", installationId] }),
+    client.invalidateQueries({ queryKey: ["detected", installationId] }),
   ]);
 }
 

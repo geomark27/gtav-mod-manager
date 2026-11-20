@@ -117,6 +117,19 @@ impl App {
         game_folder_writes: bool,
         build: impl FnOnce(&EngineContext<'_>) -> gmm_engine::Result<Plan>,
     ) -> Result<Option<TransactionId>, AppError> {
+        self.commit_plan_with(op, inst, game_folder_writes, true, build)
+    }
+
+    /// [`App::commit_plan`] with control over the rescan, for callers that run several
+    /// transactions in a row and rescan once at the end.
+    pub(crate) fn commit_plan_with(
+        &self,
+        op: &Operation<'_>,
+        inst: &Installation,
+        game_folder_writes: bool,
+        rescan: bool,
+        build: impl FnOnce(&EngineContext<'_>) -> gmm_engine::Result<Plan>,
+    ) -> Result<Option<TransactionId>, AppError> {
         op.report(0, 0, Some("Checking the installation"));
         self.check_guards_id(
             inst.id,
@@ -152,7 +165,9 @@ impl App {
         op.report(0, 0, Some("Applying changes"));
         let tx = self.with_engine(inst, |ctx| execute(ctx, plan))?;
         tracing::info!(%tx, installation_id = %inst.id, "transaction committed");
-        self.rescan_best_effort(inst.id, op);
+        if rescan {
+            self.rescan_best_effort(inst.id, op);
+        }
         Ok(Some(tx))
     }
 

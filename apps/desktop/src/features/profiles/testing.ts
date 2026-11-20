@@ -13,6 +13,7 @@ export function makeProfile(over: Partial<ProfileDto> = {}): ProfileDto {
     name: "Story",
     entryCount: 2,
     builtIn: false,
+    kind: "user",
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",
     ...over,

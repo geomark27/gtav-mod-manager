@@ -1,0 +1,9 @@
+# Ultimate ASI Loader / the dinput8.dll shipped with Script Hook V: loads *.asi plugins.
+# ASSUMPTION A-08.
+id = "asi-loader"
+name = "ASI Loader"
+category = "scripts_gameplay"
+editions = ["legacy", "enhanced"]
+verified = false
+files = ["dinput8.dll"]
+optional = ["asiloader.log"]

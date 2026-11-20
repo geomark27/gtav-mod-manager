@@ -1,6 +1,6 @@
 # Data model — SQLite schema v1
 
-Status: **v2 — migrations `0001_initial.sql` (schema v1) and `0002_dependencies.sql` (v2) in `crates/store/migrations/`.**
+Status: **v3 — migrations `0001_initial.sql` (schema v1), `0002_dependencies.sql` (v2) and `0003_provenance_restore_point.sql` (v3) in `crates/store/migrations/`.**
 Any change after Phase 1 ships is a new numbered migration; never edit an applied one.
 
 ## Conventions
@@ -186,6 +186,27 @@ CREATE INDEX mod_dependencies_reverse ON mod_dependencies (depends_on_mod_id);
 
 Same-installation and no-cycle rules are enforced by the repository; the engine validates the
 final states of every plan (an enabled mod never has a disabled dependency).
+
+## Migration 0003 — provenance and restore point (schema v3, Phase 4)
+
+```sql
+ALTER TABLE mods ADD COLUMN source_kind TEXT NOT NULL DEFAULT 'manual'
+    CHECK (source_kind IN ('recognized', 'grouped', 'manual', 'zip_import'));
+ALTER TABLE mods ADD COLUMN source_detail TEXT;   -- signature id or archive file name
+ALTER TABLE mods ADD COLUMN source_sha256 TEXT;   -- archive hash of a ZIP import
+ALTER TABLE mods ADD COLUMN source_version TEXT;  -- signature/PE version when known
+
+ALTER TABLE profiles ADD COLUMN kind TEXT NOT NULL DEFAULT 'user'
+    CHECK (kind IN ('user', 'restore_point'));
+CREATE UNIQUE INDEX profiles_one_restore_point ON profiles (installation_id)
+    WHERE kind = 'restore_point';
+```
+
+Mods that existed before v3 are `manual`. The source travels in the adoption payload of the
+journal (`AdoptPayload.source`, `manual` when absent), so recovery commits it too. The
+`restore_point` profile is the snapshot vanilla mode saves before disabling every mod; the
+repository replaces it atomically (`replace_restore_point`) and the app deletes it after a
+successful restore.
 
 ## Notes
 

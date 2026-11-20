@@ -47,6 +47,7 @@ export function ProfilesView({ installationId }: { installationId: string }) {
               <span className={styles.name}>
                 {p.name}
                 {p.builtIn ? <Badge tone="neutral">Built-in</Badge> : null}
+                {p.kind === "restore_point" ? <Badge tone="info">Restore point</Badge> : null}
                 <span className={styles.muted}>
                   {p.entryCount} {p.entryCount === 1 ? "mod" : "mods"}
                 </span>

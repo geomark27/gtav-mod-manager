@@ -5,6 +5,16 @@ import type { GuardStatusDto } from "../../bindings/GuardStatusDto";
 import type { ModDetailDto } from "../../bindings/ModDetailDto";
 import type { ModDto } from "../../bindings/ModDto";
 import type { PlanPreviewDto } from "../../bindings/PlanPreviewDto";
+import type { VanillaStatusDto } from "../../bindings/VanillaStatusDto";
+
+/** Vanilla status of an installation without managed mods (the panel renders nothing). */
+export const NO_VANILLA: VanillaStatusDto = {
+  active: false,
+  restorePoint: null,
+  modsTotal: 0,
+  modsInGame: 0,
+  unmanagedFiles: null,
+};
 
 /** Builds a mod for tests. */
 export function makeMod(over: Partial<ModDto> = {}): ModDto {
@@ -18,6 +28,7 @@ export function makeMod(over: Partial<ModDto> = {}): ModDto {
     totalSize: 2048,
     conflictsWith: [],
     dependsOnCount: 0,
+    source: { kind: "manual", detail: null, sha256: null, version: null },
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",
     ...over,
@@ -98,6 +109,8 @@ export function mockModsIpc(initial: Partial<ModsMock> = {}): ModsMock {
       }
       case "preview_set_category":
         return mock.preview;
+      case "vanilla_status":
+        return NO_VANILLA;
       default:
         return undefined;
     }

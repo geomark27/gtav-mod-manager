@@ -4,7 +4,7 @@
 use std::collections::{HashMap, HashSet};
 
 use gmm_domain::{
-    Category, Mod, ModEntry, ModEntryId, ModId, ModState, RelPath, Sha256, StepKind,
+    Category, Mod, ModEntry, ModEntryId, ModId, ModSource, ModState, RelPath, Sha256, StepKind,
     TransactionKind, parse_artifact, validate_mod_name,
 };
 use gmm_platform::sha256_file;
@@ -80,10 +80,25 @@ pub struct AdoptPayload {
     /// `Disabled` for an imported mod. Journals written before this field existed are `Enabled`.
     #[serde(default = "enabled")]
     pub initial_state: ModState,
+    /// Where the mod came from. Journals written before provenance existed are `manual`.
+    #[serde(default)]
+    pub source: ModSource,
 }
 
 fn enabled() -> ModState {
     ModState::Enabled
+}
+
+impl Plan {
+    /// Records the provenance of the mod an adoption or import creates (`manual` by default).
+    /// Plans that create no mod are returned unchanged.
+    #[must_use]
+    pub fn with_source(mut self, source: ModSource) -> Self {
+        if let Some(adopt) = self.summary.adopt.as_mut() {
+            adopt.source = source;
+        }
+        self
+    }
 }
 
 pub(crate) fn finish(kind: TransactionKind, steps: Vec<PlannedStep>, summary: TxSummary) -> Plan {
@@ -182,6 +197,7 @@ pub fn plan_adopt(
             entries,
             included_unknown,
             initial_state: ModState::Enabled,
+            source: ModSource::manual(),
         }),
         ..TxSummary::default()
     };
@@ -243,6 +259,7 @@ pub fn plan_register_imported(
             entries: entries.to_vec(),
             included_unknown: false,
             initial_state: ModState::Disabled,
+            source: ModSource::manual(),
         }),
         vault_objects,
         ..TxSummary::default()

@@ -4,7 +4,8 @@
 
 use chrono::{DateTime, Utc};
 use gmm_domain::{
-    Category, InstallMechanism, InstallationId, Mod, ModEntry, ModId, ModState, RelPath, Sha256,
+    Category, InstallMechanism, InstallationId, Mod, ModEntry, ModId, ModSource, ModSourceKind,
+    ModState, RelPath, Sha256,
 };
 use rusqlite::{Row, params, params_from_iter};
 
@@ -13,8 +14,8 @@ use crate::database::Database;
 use crate::error::{Error, Result};
 use crate::time::{from_db, to_db};
 
-const MOD_COLUMNS: &str =
-    "id, installation_id, name, category, state, mechanism, notes, created_at, updated_at";
+const MOD_COLUMNS: &str = "id, installation_id, name, category, state, mechanism, notes, \
+     created_at, updated_at, source_kind, source_detail, source_sha256, source_version";
 const ENTRY_COLUMNS: &str = "id, mod_id, rel_path, sha256, size";
 
 /// Maximum number of bound keys per `IN (...)` query.
@@ -28,6 +29,22 @@ fn mod_from_row(r: &Row<'_>) -> Result<Mod> {
     let mechanism: String = r.get(5)?;
     let created: String = r.get(7)?;
     let updated: String = r.get(8)?;
+    let source_kind: String = r.get(9)?;
+    let source_sha: Option<String> = r.get(11)?;
+    let source = ModSource {
+        kind: parse_col::<ModSourceKind>("mods", "source_kind", &source_kind)?,
+        detail: r.get(10)?,
+        sha256: source_sha
+            .map(|s| {
+                Sha256::parse(&s).map_err(|_| Error::Corrupt {
+                    table: "mods",
+                    column: "source_sha256",
+                    value: s.clone(),
+                })
+            })
+            .transpose()?,
+        version: r.get(12)?,
+    };
     Ok(Mod {
         id: parse_col("mods", "id", &id)?,
         installation_id: parse_col("mods", "installation_id", &inst)?,
@@ -36,6 +53,7 @@ fn mod_from_row(r: &Row<'_>) -> Result<Mod> {
         state: parse_col::<ModState>("mods", "state", &state)?,
         mechanism: parse_col::<InstallMechanism>("mods", "mechanism", &mechanism)?,
         notes: r.get(6)?,
+        source,
         created_at: from_db("mods", "created_at", &created)?,
         updated_at: from_db("mods", "updated_at", &updated)?,
     })
@@ -67,7 +85,9 @@ fn entry_from_row(r: &Row<'_>, offset: usize) -> Result<ModEntry> {
 /// Inserts a mod row (used by the adopt commit, inside its SQLite transaction).
 pub(crate) fn insert_mod(conn: &rusqlite::Connection, m: &Mod) -> Result<()> {
     conn.execute(
-        &format!("INSERT INTO mods ({MOD_COLUMNS}) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)"),
+        &format!(
+            "INSERT INTO mods ({MOD_COLUMNS}) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)"
+        ),
         params![
             m.id.to_string(),
             m.installation_id.to_string(),
@@ -78,6 +98,10 @@ pub(crate) fn insert_mod(conn: &rusqlite::Connection, m: &Mod) -> Result<()> {
             m.notes,
             to_db(m.created_at),
             to_db(m.updated_at),
+            m.source.kind.as_str(),
+            m.source.detail,
+            m.source.sha256.as_ref().map(Sha256::as_str),
+            m.source.version,
         ],
     )
     .map_err(|e| {

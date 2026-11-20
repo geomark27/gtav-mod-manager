@@ -8,6 +8,7 @@ import { formatBytes } from "../../lib/format";
 import { DependenciesSection } from "../dependencies/DependenciesSection";
 import { ErrorMessage } from "../installations/ErrorMessage";
 import { CategorySelect } from "../inventory/CategorySelect";
+import { sourceLabel } from "./modLabels";
 import styles from "./Mods.module.css";
 import { useForgetMod, useModDetail, useReadoptMod, useRestoreMod, useUpdateMod } from "./useMods";
 
@@ -76,6 +77,9 @@ function DetailsBody({ installationId, mod, detail, blockedReason, onClose }: Bo
 
   return (
     <div className={styles.stack}>
+      <p className={styles.muted} title={detail.source.sha256 ?? undefined}>
+        Source: {sourceLabel(detail.source, detail.createdAt)}
+      </p>
       <table className={styles.table}>
         <thead>
           <tr>

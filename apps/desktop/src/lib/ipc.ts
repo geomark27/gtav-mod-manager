@@ -1,4 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
+import type { AdoptDetectedRequest } from "../bindings/AdoptDetectedRequest";
+import type { AdoptDetectedResultDto } from "../bindings/AdoptDetectedResultDto";
 import type { AdoptPreviewDto } from "../bindings/AdoptPreviewDto";
 import type { AdoptRequest } from "../bindings/AdoptRequest";
 import type { AppError } from "../bindings/AppError";
@@ -6,6 +8,7 @@ import type { AppStatusDto } from "../bindings/AppStatusDto";
 import type { BaselineDto } from "../bindings/BaselineDto";
 import type { Category } from "../bindings/Category";
 import type { DashboardDto } from "../bindings/DashboardDto";
+import type { DetectedModsDto } from "../bindings/DetectedModsDto";
 import type { ConfirmImportRequest } from "../bindings/ConfirmImportRequest";
 import type { DiscoveredInstallationDto } from "../bindings/DiscoveredInstallationDto";
 import type { DriftDto } from "../bindings/DriftDto";
@@ -25,6 +28,7 @@ import type { ProfileEntryInput } from "../bindings/ProfileEntryInput";
 import type { RegisterInstallationRequest } from "../bindings/RegisterInstallationRequest";
 import type { ScanSummaryDto } from "../bindings/ScanSummaryDto";
 import type { TransactionPageDto } from "../bindings/TransactionPageDto";
+import type { VanillaStatusDto } from "../bindings/VanillaStatusDto";
 import type { VaultReportDto } from "../bindings/VaultReportDto";
 
 function isAppError(value: unknown): value is AppError {
@@ -85,6 +89,12 @@ export const commands = {
   previewAdopt: (installationId: string, relPaths: string[]) =>
     invokeCommand<AdoptPreviewDto>("preview_adopt", { installationId, relPaths }),
   adoptMod: (req: AdoptRequest) => invokeCommand<ModDto>("adopt_mod", { req }),
+  /** Known mods by name and grouped candidates, from the last scan. */
+  detectMods: (installationId: string) =>
+    invokeCommand<DetectedModsDto>("detect_mods", { installationId }),
+  /** One transaction per mod, requirements first; failures are reported per mod. */
+  adoptDetected: (req: AdoptDetectedRequest) =>
+    invokeCommand<AdoptDetectedResultDto>("adopt_detected", { req }),
   /** `withDependencies` applies the dependency closure in the same transaction. */
   setModEnabled: (modId: string, enabled: boolean, withDependencies = false) =>
     invokeCommand<ModDto>(
@@ -134,6 +144,14 @@ export const commands = {
   /** `profileId` is a profile UUID or `"vanilla"`. */
   applyProfile: (installationId: string, profileId: string) =>
     invokeCommand<ModDto[]>("apply_profile", { installationId, profileId }),
+  vanillaStatus: (installationId: string) =>
+    invokeCommand<VanillaStatusDto>("vanilla_status", { installationId }),
+  /** Saves a restore point, then disables every mod in one transaction. */
+  enterVanilla: (installationId: string) =>
+    invokeCommand<VanillaStatusDto>("enter_vanilla", { installationId }),
+  /** Applies the restore point in one transaction and deletes it. */
+  restoreFromVanilla: (installationId: string) =>
+    invokeCommand<VanillaStatusDto>("restore_from_vanilla", { installationId }),
   listTransactions: (installationId: string, limit: number, offset: number) =>
     invokeCommand<TransactionPageDto>("list_transactions", { installationId, limit, offset }),
   dashboard: (installationId: string) =>

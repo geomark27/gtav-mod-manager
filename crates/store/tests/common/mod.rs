@@ -120,6 +120,7 @@ pub fn new_mod(inst: InstallationId, name: &str, state: ModState) -> Mod {
         state,
         mechanism: InstallMechanism::LooseFiles,
         notes: None,
+        source: gmm_domain::ModSource::manual(),
         created_at: ts(0),
         updated_at: ts(0),
     }

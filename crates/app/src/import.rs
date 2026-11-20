@@ -10,8 +10,8 @@ use std::sync::{MutexGuard, PoisonError};
 
 use gmm_archive::{Limits, StagedArchive, map_to_game, stage_zip, suggest_root};
 use gmm_domain::{
-    Category, Classification, Installation, InstallationId, ModId, ModState, RelPath,
-    TransactionId, parse_artifact,
+    Category, Classification, Installation, InstallationId, ModId, ModSource, ModState, RelPath,
+    Sha256, TransactionId, parse_artifact,
 };
 use gmm_engine::{import_to_vault, plan_register_imported, resolve};
 use gmm_platform::{AppDirs, Fs, StdFs};
@@ -36,6 +36,8 @@ pub(crate) struct StagedImport {
     id: String,
     installation_id: InstallationId,
     archive_name: String,
+    /// SHA-256 of the archive file, recorded as the provenance of the imported mod.
+    archive_sha256: Option<Sha256>,
     archive: StagedArchive,
 }
 
@@ -356,10 +358,15 @@ impl App {
                 .file_name()
                 .map(|n| n.to_string_lossy().into_owned())
                 .unwrap_or_default();
+            // Provenance only: an unreadable hash never blocks the import.
+            let archive_sha256 = gmm_platform::sha256_file(&StdFs::new(), &zip)
+                .ok()
+                .and_then(|h| Sha256::parse(&h).ok());
             let staged = StagedImport {
                 id: uuid::Uuid::now_v7().to_string(),
                 installation_id: id,
                 archive_name,
+                archive_sha256,
                 archive,
             };
             if staged.archive.entries.is_empty() {
@@ -478,8 +485,11 @@ impl App {
                 import_to_vault(ctx.fs, ctx.vault, &mapped, tx_hint)
             })?;
             let mod_id = ModId::new();
+            let source =
+                ModSource::zip_import(staged.archive_name.clone(), staged.archive_sha256.clone());
             let committed = self.commit_plan(op, &inst, false, |ctx| {
                 plan_register_imported(ctx, mod_id, &name, req.category, notes, &imported)
+                    .map(|plan| plan.with_source(source))
             })?;
             if committed.is_none() {
                 return Err(AppError::new(

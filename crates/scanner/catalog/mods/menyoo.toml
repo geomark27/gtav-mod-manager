@@ -1,0 +1,9 @@
+# Menyoo PC (SP): ASI plugin with its data folder in the game root. ASSUMPTION A-08.
+id = "menyoo"
+name = "Menyoo"
+category = "scripts_gameplay"
+editions = ["legacy", "enhanced"]
+requires = ["script-hook-v", "asi-loader"]
+verified = false
+files = ["Menyoo.asi", "menyooStuff/**"]
+optional = ["menyooLog.txt", "menyooConfig.ini"]

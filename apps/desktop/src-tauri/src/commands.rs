@@ -5,12 +5,13 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use gmm_app::{
-    AdoptPreviewDto, AdoptRequest, App, AppError, AppStatusDto, BaselineDto, Category,
-    ConfirmImportRequest, DashboardDto, DiscoveredInstallationDto, DriftDto, ErrorCode,
-    GuardStatusDto, ImportPreviewDto, InstallationDto, InventoryFilterDto, InventoryPageDto,
-    InventorySummaryDto, ModDetailDto, ModDto, OperationStatusDto, PlanPreviewDto,
-    ProfileDetailDto, ProfileDto, ProfileEntryInput, ProgressDto, ProgressSink,
-    RegisterInstallationRequest, ScanSummaryDto, ThrottledSink, TransactionPageDto, VaultReportDto,
+    AdoptDetectedRequest, AdoptDetectedResultDto, AdoptPreviewDto, AdoptRequest, App, AppError,
+    AppStatusDto, BaselineDto, Category, ConfirmImportRequest, DashboardDto, DetectedModsDto,
+    DiscoveredInstallationDto, DriftDto, ErrorCode, GuardStatusDto, ImportPreviewDto,
+    InstallationDto, InventoryFilterDto, InventoryPageDto, InventorySummaryDto, ModDetailDto,
+    ModDto, OperationStatusDto, PlanPreviewDto, ProfileDetailDto, ProfileDto, ProfileEntryInput,
+    ProgressDto, ProgressSink, RegisterInstallationRequest, ScanSummaryDto, ThrottledSink,
+    TransactionPageDto, VanillaStatusDto, VaultReportDto,
     profile_name_suggestions as suggested_profile_names,
 };
 use tauri::{AppHandle, Emitter, State};
@@ -400,6 +401,64 @@ pub async fn apply_profile(
     let sink = progress_sink(handle);
     run_blocking(&state, move |app| {
         app.apply_profile(&installation_id, &profile_id, &sink)
+    })
+    .await
+}
+
+/// Mods proposed from the last scan: known mods by name and grouped candidates.
+#[tauri::command]
+pub async fn detect_mods(
+    state: State<'_, AppState>,
+    installation_id: String,
+) -> Result<DetectedModsDto, AppError> {
+    run_blocking(&state, move |app| app.detect_mods(&installation_id)).await
+}
+
+/// Adopts several proposals, one transaction each, emitting `gmm://progress` events.
+#[tauri::command]
+pub async fn adopt_detected(
+    handle: AppHandle,
+    state: State<'_, AppState>,
+    req: AdoptDetectedRequest,
+) -> Result<AdoptDetectedResultDto, AppError> {
+    let sink = progress_sink(handle);
+    run_blocking(&state, move |app| app.adopt_detected(req, &sink)).await
+}
+
+/// Vanilla mode of an installation: restore point and how many mods are in the game.
+#[tauri::command]
+pub async fn vanilla_status(
+    state: State<'_, AppState>,
+    installation_id: String,
+) -> Result<VanillaStatusDto, AppError> {
+    run_blocking(&state, move |app| app.vanilla_status(&installation_id)).await
+}
+
+/// Saves a restore point and disables every mod in one transaction, emitting
+/// `gmm://progress` events.
+#[tauri::command]
+pub async fn enter_vanilla(
+    handle: AppHandle,
+    state: State<'_, AppState>,
+    installation_id: String,
+) -> Result<VanillaStatusDto, AppError> {
+    let sink = progress_sink(handle);
+    run_blocking(&state, move |app| {
+        app.enter_vanilla(&installation_id, &sink)
+    })
+    .await
+}
+
+/// Applies the restore point in one transaction, emitting `gmm://progress` events.
+#[tauri::command]
+pub async fn restore_from_vanilla(
+    handle: AppHandle,
+    state: State<'_, AppState>,
+    installation_id: String,
+) -> Result<VanillaStatusDto, AppError> {
+    let sink = progress_sink(handle);
+    run_blocking(&state, move |app| {
+        app.restore_from_vanilla(&installation_id, &sink)
     })
     .await
 }

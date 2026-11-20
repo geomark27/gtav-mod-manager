@@ -9,6 +9,12 @@ import { ReviewPage } from "./ReviewPage";
 
 vi.mock("@tauri-apps/api/event", () => import("../lib/eventMock"));
 
+/** Renders the Review page and opens the All files tab. */
+async function renderAllFiles() {
+  renderWithProviders(<ReviewPage />);
+  await userEvent.click(await screen.findByRole("tab", { name: "All files" }));
+}
+
 const INSTALLATION = makeInstallation();
 
 const ITEMS = [
@@ -72,6 +78,14 @@ function setup(opts: { selected?: boolean; total?: number; items?: typeof ITEMS 
 afterEach(() => clearMocks());
 
 describe("ReviewPage", () => {
+  it("opens on the Detected mods tab", async () => {
+    setup();
+    renderWithProviders(<ReviewPage />);
+    const tab = await screen.findByRole("tab", { name: "Detected mods" });
+    expect(tab).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tabpanel", { name: "Detected mods" })).toBeInTheDocument();
+  });
+
   it("links to Installations when there is no active installation", async () => {
     setup({ selected: false });
     renderWithProviders(<ReviewPage />);
@@ -83,7 +97,7 @@ describe("ReviewPage", () => {
 
   it("shows the installation, controls, rows with evidence", async () => {
     setup();
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     expect(await screen.findByText("GTA V Legacy (Steam)")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Scan now" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Capture baseline" })).toBeInTheDocument();
@@ -105,7 +119,7 @@ describe("ReviewPage", () => {
 
   it("shows one chip per classification with its count", async () => {
     setup();
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     expect(await screen.findByRole("button", { name: "Original 2" })).toBeInTheDocument();
     for (const name of [
       "Modified original 1",
@@ -121,7 +135,7 @@ describe("ReviewPage", () => {
 
   it("sends the selected classifications and resets the page", async () => {
     const calls = setup({ total: 250 });
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     await screen.findByText("scripts/trainer.asi");
     expect(calls.list[0]?.filter).toEqual({
       classifications: [],
@@ -157,7 +171,7 @@ describe("ReviewPage", () => {
 
   it("debounces the search before querying", async () => {
     const calls = setup();
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     await screen.findByText("scripts/trainer.asi");
     const before = calls.list.length;
     await userEvent.type(screen.getByRole("searchbox", { name: "Search files" }), "trainer");
@@ -169,7 +183,7 @@ describe("ReviewPage", () => {
 
   it("paginates 100 rows per page", async () => {
     setup({ total: 250 });
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     expect(await screen.findByText("Showing 1–4 of 250")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
@@ -182,7 +196,7 @@ describe("ReviewPage", () => {
       if (cmd === "list_inventory") return { items: [], total: 0 };
       return undefined;
     });
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     expect(
       await screen.findByText("No scan yet. Scan the installation to see its files."),
     ).toBeInTheDocument();
@@ -190,7 +204,7 @@ describe("ReviewPage", () => {
 
   it("says when filters match nothing", async () => {
     setup({ items: [] });
-    renderWithProviders(<ReviewPage />);
+    await renderAllFiles();
     await userEvent.click(await screen.findByRole("button", { name: "Candidate 1" }));
     expect(await screen.findByText("No files match the current filters.")).toBeInTheDocument();
   });

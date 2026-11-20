@@ -3,6 +3,7 @@ import type { Category } from "./Category";
 import type { ModConflictDto } from "./ModConflictDto";
 import type { ModEntryDto } from "./ModEntryDto";
 import type { ModRefDto } from "./ModRefDto";
+import type { ModSourceDto } from "./ModSourceDto";
 import type { ModState } from "./ModState";
 
 /**
@@ -57,6 +58,10 @@ conflictsWith: Array<ModConflictDto>,
  * Number of mods this one directly depends on.
  */
 dependsOnCount: number, 
+/**
+ * Where the mod came from.
+ */
+source: ModSourceDto, 
 /**
  * Creation time, RFC 3339 UTC.
  */

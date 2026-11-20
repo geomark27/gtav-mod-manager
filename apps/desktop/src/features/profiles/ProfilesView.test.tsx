@@ -35,6 +35,16 @@ describe("ProfilesView", () => {
     expect(screen.getAllByRole("listitem")[0]).toBe(vanilla);
   });
 
+  it("marks the restore point saved by vanilla mode", async () => {
+    mockProfilesIpc({
+      profiles: [VANILLA, makeProfile({ id: "rp", name: "Before vanilla", kind: "restore_point" })],
+    });
+    renderView();
+    const rp = await item("Before vanilla");
+    expect(within(rp).getByText("Restore point")).toBeInTheDocument();
+    expect(within(await item("Vanilla")).queryByText("Restore point")).not.toBeInTheDocument();
+  });
+
   it("saves the current state with a suggested name", async () => {
     const mock = mockProfilesIpc();
     mock.handlers.create_profile_from_current = (args) => {

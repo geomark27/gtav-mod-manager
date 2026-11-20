@@ -8,6 +8,7 @@ import { formatBytes, formatDateTime } from "../../lib/format";
 import { GuardBanner } from "../guards/GuardBanner";
 import { guardNotice } from "../guards/blocking";
 import { ErrorMessage } from "../installations/ErrorMessage";
+import { VanillaPanel } from "../vanilla/VanillaPanel";
 import { STATUS_INFO } from "../activity/labels";
 import { formatRelative } from "./relativeTime";
 import styles from "./Dashboard.module.css";
@@ -44,6 +45,7 @@ export function DashboardView({ installationId }: { installationId: string }) {
   return (
     <div className={styles.stack}>
       {notice ? <GuardBanner notice={notice} /> : null}
+      <VanillaPanel installationId={installationId} blockedReason={notice?.text ?? null} />
       <div className={styles.grid}>
         <Card title="Mods">
           <div className={styles.value}>

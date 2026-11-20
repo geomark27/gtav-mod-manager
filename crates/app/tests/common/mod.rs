@@ -52,6 +52,19 @@ pub const ALPHA: [&str; 2] = ["scripts/alpha.dll", "scripts/alpha.ini"];
 pub const BETA: [&str; 2] = ["beta.asi", "beta.ini"];
 
 pub fn env() -> Env {
+    env_with(
+        FakeInstall::builder(Edition::Legacy)
+            .with_base_files()
+            .asi_mod("trainer")
+            .asi_mod("beta")
+            .scripts_mod("alpha")
+            .build()
+            .expect("install"),
+    )
+}
+
+/// Like [`env`] with a custom installation (registered and scanned).
+pub fn env_with(install: FakeInstall) -> Env {
     let tmp = TempDir::new().expect("tempdir");
     let base = dunce::canonicalize(tmp.path()).expect("canonical");
     let dirs = AppDirs::at(&base.join("data"));
@@ -65,13 +78,6 @@ pub fn env() -> Env {
         },
     )
     .expect("init");
-    let install = FakeInstall::builder(Edition::Legacy)
-        .with_base_files()
-        .asi_mod("trainer")
-        .asi_mod("beta")
-        .scripts_mod("alpha")
-        .build()
-        .expect("install");
     let dto = app
         .register_installation(RegisterInstallationRequest {
             root_path: install.root().to_string_lossy().into_owned(),

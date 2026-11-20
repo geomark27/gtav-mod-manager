@@ -11,7 +11,7 @@ Status: v0.1 · 2026-11-18 · Maintained by the Tech Lead only (agents never edi
 | Developers  | Claude Sonnet 5.5 (medium) subagents   | Write code and tests for one task; light verification of their own crate/module. |
 | Runners     | opencode `deepseek-v4.1-flash-free`    | Dependency installs, full builds, full test/lint suites, reports. Never edit code. |
 
-Working copy is local only (no git for now). Tasks in the same wave never share files.
+Git flow: `feature|fix|docs|release/*` branches into `develop`, promoted to `main` (see `docs/release.md`). Tasks in the same wave never share files.
 
 ## Phase 1 — MVP
 
@@ -42,7 +42,7 @@ Working copy is local only (no git for now). Tasks in the same wave never share 
 
 | Item | Status |
 | ---- | ------ |
-| Mod metadata recognition | Seeded: PE file version of `.dll`/`.asi`/`.exe` entries (Windows) — T24 |
+| Mod metadata recognition | Seeded: PE file version of `.dll`/`.asi`/`.exe` entries (Windows) — T24. Full plan: **Phase 4 — Mod recognition** below |
 | Broader installation types | Steam / Epic / Rockstar / manual + junctioned roots — T07, T09 |
 | Integration with install tools (OpenIV, etc.) | Not started — requires those tools and their formats; `mods/` folder is already classified |
 | Update detection | Not started — requires an online catalog/API (network access and a provider decision) |
@@ -94,6 +94,118 @@ All code tasks by Sonnet 5.5 medium (1 round each unless noted); runners by open
 | T21 | M7 | `crates/scanner` | Authenticode publisher via WinVerifyTrust (embedded signatures). | Done (Windows run pending) |
 | R05 | all | runner | Full verification of the workspace. | Done — all PASS after TL fix (cfg(unix) on one app test) |
 
+## Phase 4 — Mod recognition (planned, target v0.2.0)
+
+Status: **code complete** (2026-11-19) — R1–R5 done (PRs #9, #10 and `feature/detected-mods`). Open: R6 (A-08 file lists, Windows run on a copy, release v0.2.0). Decided with the owner after the first use of
+v0.1.0 on a real GTA V Enhanced installation that already had mods (Rampage Trainer).
+
+### Problem
+
+A user who already installed mods by hand sees, after a scan, a list of loose files marked
+*Candidate* (“ASI plugin”, “Scripts folder”…). The app does not know that `ScriptHookV.dll`,
+`dinput8.dll`, `ScriptHookVDotNet*` and `scripts/Rampage…` form **Rampage Trainer** and its
+requirements, so the user must pick files and build each mod by hand. That is exactly the hard
+part for a normal user.
+
+### Goal
+
+After a scan, the app proposes **named mods** (“Rampage Trainer — 8 files — requires Script
+Hook V .NET”), the user adopts them with one action, and from then on every mod shows where it
+came from and can be switched on/off — including a one-click **vanilla mode** to remove every
+mod before playing online and a one-click **restore**.
+
+### Principles (unchanged)
+
+- Recognition only **proposes**; nothing is managed until the user adopts it (D-03).
+- Adoption never moves files: they stay in place, a verified copy goes to the vault.
+- Catalog originals always win (D-14): a signature can never claim a game file.
+- No network: the signature catalog ships with the app and grows with releases.
+- **Vanilla mode removes mod files from the game folder; it does not guarantee that playing
+  online is safe.** The persistent notice stays; no screen may say “safe for online”.
+
+### R1 — Known-mod signature catalog and matcher (`gmm-scanner`)
+
+- Signature files `crates/scanner/catalog/mods/*.toml`, one per known mod:
+  `id`, `name`, `category`, `editions` (legacy/enhanced/both), `requires` (other signature
+  ids), match rules: `files` (required paths/globs, anchored like the catalog globs), `optional`
+  files/folders, `any_of` groups, and optional PE metadata (`product_name` / `file_description`
+  substrings from the version resource, Windows only).
+- Matcher: input = scan inventory (candidate/unknown items); output =
+  `RecognizedMod { signature_id, name, files, confidence: high|medium, missing_optional, requires }`.
+  A file belongs to at most one recognition (most specific signature wins; ties → none,
+  reported as ambiguous). Never matches `Original`/`OriginalModified` items.
+- Initial signatures (names and paths verified on real installs — assumption **A-08**):
+  Script Hook V, Script Hook V .NET (v2/v3/nightly), Ultimate ASI Loader / `dinput8.dll`,
+  Rampage Trainer, Menyoo, Simple Trainer, Native Trainer, NativeUI, LemonUI, ReShade, ENB,
+  OpenIV ASI (`OpenIV.asi`) and the OpenIV `mods/` folder (as one “OpenIV mods folder” item).
+- Tests: fixtures built with `gmm-testkit` for each signature, overlap/ambiguity cases, false
+  positives (game files with similar names), Legacy vs Enhanced.
+
+### R2 — Grouping heuristics for unrecognized candidates (`gmm-scanner`)
+
+- Group remaining candidates into proposed mods: one per first-level folder under `scripts/`,
+  `plugins/`, `mods/`; stem pairs (`x.asi` + `x.ini` + `x/` folder); loose files alone.
+- Suggested name from folder/stem (title-cased), suggested category from the catalog pattern.
+- Confidence `low`; always editable before adopting.
+
+### R3 — “Detected mods” review and bulk adoption (`gmm-app`, `gmm-engine`, UI)
+
+- New Review tab **Detected mods**: cards per proposed mod (name, confidence badge, files,
+  requirements, edition warning if the signature does not support this edition), editable name
+  and category, include/exclude checkboxes, plus the existing per-file list for manual work.
+- **Adopt all selected** (game and launchers closed): one transaction per mod, run in sequence
+  with a summary (adopted / skipped with reason); requirements adopted first.
+- Dependency links (`mod_dependencies`, Phase 2) created automatically from `requires` when both
+  mods are managed.
+- After adoption the scan re-runs and the recognized files show as *Managed by “Rampage
+  Trainer”*.
+
+### R4 — Vanilla mode and restore (`gmm-app`, UI)
+
+- Dashboard and Mods page: **Disable all mods (vanilla)** → snapshots the current states into
+  an automatic profile “Before vanilla — <date>” and applies Vanilla in one transaction (guards
+  as usual: game closed, no drift). A persistent indicator **Vanilla mode active**.
+- **Restore my mods** → applies that snapshot in one transaction. Only the latest snapshot is
+  kept as the restore point; it is also listed in Profiles.
+- Confirmation dialog repeats the online notice.
+
+### R5 — Provenance (“where did this mod come from”) (`gmm-store` migration 0003, app, UI)
+
+- Columns on `mods`: `source_kind` (`recognized` | `grouped` | `manual` | `zip_import`),
+  `source_detail` (signature id or archive file name), `source_sha256` (archive hash for ZIP
+  imports), `source_version` (signature/PE version when known), `installed_at`.
+- Backfill existing mods as `manual`; ZIP imports record the archive name and hash.
+- UI: “Source” line in mod rows/details (“Recognized as Rampage Trainer”, “Imported from
+  RampageTrainer_v4.zip on 2026-11-19”, “Adopted by hand”).
+
+### R6 — Validation and release v0.2.0
+
+- Read-only collection of real file lists from the owner's installations (Legacy/Enhanced) to
+  close **A-08**; never modify the real folder during development.
+- Windows validation on a copy (docs/windows-validation.md §4) with Rampage: recognize → adopt
+  all → vanilla → restore → files byte-identical.
+- CHANGELOG `[Unreleased]` lines per item; `make bump bump=minor` → v0.2.0.
+
+### Order and size
+
+| Step | Depends on | Size | Owner |
+| ---- | ---------- | ---- | ----- |
+| R1 | — | M | scanner — **Done** (13 signatures, all `verified = false` until A-08; PE metadata rules deferred) |
+| R2 | R1 | S | scanner — **Done** (bases: root, `scripts`, `plugins`, `mods`; `update/**` is original) |
+| R5 | — | S | store + app — **Done** (schema v3; `installed_at` dropped: same as `created_at`) |
+| R3 | R1, R2, R5 | M | app + UI — **Done** (Review tab, one transaction per mod, dependencies linked, one rescan) |
+| R4 | — | S | app + UI — **Done** (restore point = `profiles.kind = 'restore_point'`) |
+| R6 | all | S | owner + TL — checklist in `docs/windows-validation.md` §6 |
+
+R1, R4 and R5 can run in parallel (different crates/screens).
+
+### Out of scope (still)
+
+Downloading mods or signatures from the internet, update detection for mods, OpenIV package
+(`.oiv`) installation, anything that touches anti-cheat or promises online safety.
+
+---
+
 ## Assumptions to verify (closed in M7 at the latest)
 
 | ID   | Assumption                                                                        | Needed by |
@@ -105,3 +217,4 @@ All code tasks by Sonnet 5.5 medium (1 round each unless noted); runners by open
 | A-05 | Required base files per edition for structural validation.                       | M2        |
 | A-06 | Trusted publisher subjects for Authenticode (Rockstar and shipped runtimes). Only embedded signatures are read (catalog-signed files return none). | M3 / M7   |
 | A-07 | Process names of the game, launchers and Rockstar services.                      | M4 / M7   |
+| A-08 | Real file names and paths of the mods in the Phase 4 signature catalog (Rampage Trainer, Script Hook V, SHVDN, ASI Loader, Menyoo, …) for Legacy and Enhanced. | Phase 4 R1 |

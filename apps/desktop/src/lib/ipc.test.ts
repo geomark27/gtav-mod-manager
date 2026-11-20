@@ -95,10 +95,15 @@ describe("ipc", () => {
     await commands.deleteProfile("p1");
     await commands.previewApplyProfile("i1", VANILLA_PROFILE_ID);
     await commands.applyProfile("i1", "p1");
+    await commands.vanillaStatus("i1");
+    await commands.enterVanilla("i1");
+    await commands.restoreFromVanilla("i1");
     await commands.listTransactions("i1", 20, 40);
     await commands.dashboard("i1");
     await commands.restoreMod("m1");
     await commands.readoptMod("m1");
+    await commands.detectMods("i1");
+    await commands.adoptDetected({ installationId: "i1", items: [], confirmUnknown: true });
     expect(calls).toEqual([
       ["list_profiles", { installationId: "i1" }],
       ["profile_name_suggestions", {}],
@@ -109,10 +114,15 @@ describe("ipc", () => {
       ["delete_profile", { profileId: "p1" }],
       ["preview_apply_profile", { installationId: "i1", profileId: "vanilla" }],
       ["apply_profile", { installationId: "i1", profileId: "p1" }],
+      ["vanilla_status", { installationId: "i1" }],
+      ["enter_vanilla", { installationId: "i1" }],
+      ["restore_from_vanilla", { installationId: "i1" }],
       ["list_transactions", { installationId: "i1", limit: 20, offset: 40 }],
       ["dashboard", { installationId: "i1" }],
       ["restore_mod", { modId: "m1" }],
       ["readopt_mod", { modId: "m1" }],
+      ["detect_mods", { installationId: "i1" }],
+      ["adopt_detected", { req: { installationId: "i1", items: [], confirmUnknown: true } }],
     ]);
   });
 

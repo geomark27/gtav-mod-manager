@@ -35,6 +35,8 @@ export function useScan(installationId: string) {
       await Promise.all([
         client.invalidateQueries({ queryKey: ["inventory", installationId] }),
         client.invalidateQueries({ queryKey: ["inventory-summary", installationId] }),
+        client.invalidateQueries({ queryKey: ["detected", installationId] }),
+        client.invalidateQueries({ queryKey: ["vanilla", installationId] }),
         // A scan re-validates the folder and may change the installation status.
         client.invalidateQueries({ queryKey: ["installations"] }),
       ]);

@@ -10,7 +10,7 @@ use std::str::FromStr;
 use chrono::Utc;
 use gmm_domain::{
     DesiredState, InstallationId, Mod, ModId, ModState, Profile, ProfileEntry, ProfileId,
-    SUGGESTED_PROFILE_NAMES, TransactionKind,
+    ProfileKind, SUGGESTED_PROFILE_NAMES, TransactionKind,
 };
 use gmm_engine::{EngineContext, Plan, plan_set_states};
 use gmm_store::Database;
@@ -43,6 +43,8 @@ pub struct ProfileDto {
     pub entry_count: u64,
     /// True only for the computed Vanilla profile (it cannot be edited or deleted).
     pub built_in: bool,
+    /// `restore_point` for the snapshot taken before vanilla mode, `user` otherwise.
+    pub kind: ProfileKind,
     /// Creation time, RFC 3339 UTC (Vanilla: the time the app started).
     pub created_at: String,
     /// Last update time, RFC 3339 UTC (Vanilla: the time the app started).
@@ -94,12 +96,13 @@ pub fn profile_name_suggestions() -> Vec<String> {
         .collect()
 }
 
-fn profile_dto(p: &Profile, entry_count: u64) -> ProfileDto {
+pub(crate) fn profile_dto(p: &Profile, entry_count: u64) -> ProfileDto {
     ProfileDto {
         id: p.id.to_string(),
         name: p.name.clone(),
         entry_count,
         built_in: false,
+        kind: p.kind,
         created_at: rfc3339(p.created_at),
         updated_at: rfc3339(p.updated_at),
     }
@@ -169,7 +172,26 @@ fn detail(db: &Database, id: ProfileId) -> Result<ProfileDetailDto, AppError> {
     })
 }
 
-fn profile_plan(ctx: &EngineContext<'_>, desired: &[(ModId, bool)]) -> gmm_engine::Result<Plan> {
+/// The current enabled/disabled state of every mod as profile entries. Drifted and damaged
+/// mods are recorded as `enabled` (their files are, or should be, in the game).
+pub(crate) fn current_entries(mods: &[Mod], profile_id: ProfileId) -> Vec<ProfileEntry> {
+    mods.iter()
+        .map(|m| ProfileEntry {
+            profile_id,
+            mod_id: m.id,
+            desired: if m.state == ModState::Disabled {
+                DesiredState::Disabled
+            } else {
+                DesiredState::Enabled
+            },
+        })
+        .collect()
+}
+
+pub(crate) fn profile_plan(
+    ctx: &EngineContext<'_>,
+    desired: &[(ModId, bool)],
+) -> gmm_engine::Result<Plan> {
     let mut plan = plan_set_states(ctx, desired)?;
     plan.kind = TransactionKind::Profile;
     Ok(plan)
@@ -189,6 +211,7 @@ impl App {
             name: gmm_domain::VANILLA_PROFILE_NAME.to_owned(),
             entry_count: db.list_mods(id)?.len() as u64,
             built_in: true,
+            kind: ProfileKind::User,
             created_at: started.clone(),
             updated_at: started,
         }];
@@ -218,22 +241,11 @@ impl App {
             id: ProfileId::new(),
             installation_id,
             name: name.to_owned(),
+            kind: ProfileKind::User,
             created_at: now,
             updated_at: now,
         };
-        let entries: Vec<ProfileEntry> = db
-            .list_mods(installation_id)?
-            .iter()
-            .map(|m| ProfileEntry {
-                profile_id: profile.id,
-                mod_id: m.id,
-                desired: if m.state == ModState::Disabled {
-                    DesiredState::Disabled
-                } else {
-                    DesiredState::Enabled
-                },
-            })
-            .collect();
+        let entries = current_entries(&db.list_mods(installation_id)?, profile.id);
         db.create_profile(&profile, &entries)
             .map_err(profile_error)?;
         // The store trims the name; read it back.
