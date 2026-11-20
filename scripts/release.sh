@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Publish a GTA V Mod Manager version from main.
-#   With bump= or ver= (run on main): runs fmt-check, clippy, the tests and the UI checks, raises
+#   With bump= or ver= (run on main): runs fmt-check, clippy, the Tauri shell check, the tests and
+#   the UI checks, raises
 #   the version (scripts/bump.sh: the three files, the
 #   lockfiles, CHANGELOG.md and the devlog card), commits "release: vX.Y.Z" on main and pushes it.
 #   Then, always:
@@ -65,9 +66,9 @@ if $raise; then
     exit 0
   fi
   # No PR runs CI before this release: the same checks run here, before anything is written.
-  step "Checking the code (fmt, clippy, tests, UI)"
-  make --no-print-directory fmt-check lint test ui >/dev/null \
-    || die "the checks failed (run make fmt-check lint test ui to see why): nothing was changed"
+  step "Checking the code (fmt, clippy, Tauri shell, tests, UI)"
+  make --no-print-directory fmt-check lint shell test ui >/dev/null \
+    || die "the checks failed (run make fmt-check lint shell test ui to see why): nothing was changed"
   echo "  ✓ checks passed"
   if [[ ${YES:-} != 1 ]]; then
     read -r -p "Raise to $target, commit on main, push and publish v$target? [y/N] " answer \
