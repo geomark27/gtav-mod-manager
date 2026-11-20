@@ -1257,7 +1257,7 @@ checksum = "e4eba85ea1d0a966a983acd07deee566e67395d2d96b6fb39e62b5a833f1eb0b"
 
 [[package]]
 name = "gmm-app"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "chrono",
  "dunce",
@@ -1283,7 +1283,7 @@ dependencies = [
 
 [[package]]
 name = "gmm-archive"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "gmm-domain",
  "gmm-platform",
@@ -1298,7 +1298,7 @@ dependencies = [
 
 [[package]]
 name = "gmm-desktop"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "gmm-app",
  "serde",
@@ -1313,7 +1313,7 @@ dependencies = [
 
 [[package]]
 name = "gmm-domain"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "chrono",
  "serde",
@@ -1325,7 +1325,7 @@ dependencies = [
 
 [[package]]
 name = "gmm-engine"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "chrono",
  "gmm-domain",
@@ -1341,7 +1341,7 @@ dependencies = [
 
 [[package]]
 name = "gmm-platform"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "directories",
  "hex",
@@ -1353,7 +1353,7 @@ dependencies = [
 
 [[package]]
 name = "gmm-scanner"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "chrono",
  "gmm-domain",
@@ -1373,7 +1373,7 @@ dependencies = [
 
 [[package]]
 name = "gmm-store"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "chrono",
  "gmm-domain",
@@ -1385,7 +1385,7 @@ dependencies = [
 
 [[package]]
 name = "gmm-testkit"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "gmm-domain",
  "gmm-platform",

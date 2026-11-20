@@ -5,7 +5,7 @@ type: docs
 author: Marcos Ramos Jacome
 agents: claude:orchestrator
 pr: pending
-version: unreleased
+version: v0.2.0
 ---
 
 # Plan: mod recognition (Phase 4)

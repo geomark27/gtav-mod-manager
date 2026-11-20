@@ -5,7 +5,7 @@ type: feat
 author: Marcos Ramos Jacome
 agents: claude:orchestrator
 pr: pending
-version: unreleased
+version: v0.2.0
 ---
 
 # Mod recognition: signatures and grouping

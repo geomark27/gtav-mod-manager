@@ -5,7 +5,7 @@ type: fix
 author: Marcos Ramos Jacome
 agents: claude:orchestrator
 pr: pending
-version: unreleased
+version: v0.2.0
 ---
 
 # One-step bump from develop or main
