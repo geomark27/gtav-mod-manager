@@ -1,0 +1,10 @@
+# Rampage Trainer: a Script Hook V .NET script. ASSUMPTION A-08: file names not yet verified;
+# the patterns are deliberately broad inside scripts/.
+id = "rampage-trainer"
+name = "Rampage Trainer"
+category = "scripts_gameplay"
+editions = ["legacy", "enhanced"]
+requires = ["script-hook-v-dotnet"]
+verified = false
+files = ["scripts/Rampage*.dll"]
+optional = ["scripts/Rampage*.ini", "scripts/Rampage*.xml", "scripts/Rampage*.pdb", "scripts/Rampage/**"]

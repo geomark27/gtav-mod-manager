@@ -1,0 +1,15 @@
+# Script Hook V .NET (v2, v3 and nightly builds share the file names). ASSUMPTION A-08.
+id = "script-hook-v-dotnet"
+name = "Script Hook V .NET"
+category = "scripts_gameplay"
+editions = ["legacy", "enhanced"]
+requires = ["script-hook-v", "asi-loader"]
+verified = false
+files = ["ScriptHookVDotNet.asi"]
+optional = [
+    "ScriptHookVDotNet*.dll",
+    "ScriptHookVDotNet*.ini",
+    "ScriptHookVDotNet*.xml",
+    "ScriptHookVDotNet*.pdb",
+    "ScriptHookVDotNet*.log",
+]

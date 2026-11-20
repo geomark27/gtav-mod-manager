@@ -1,0 +1,8 @@
+# Native Trainer shipped with Script Hook V. ASSUMPTION A-08.
+id = "native-trainer"
+name = "Native Trainer"
+category = "scripts_gameplay"
+editions = ["legacy", "enhanced"]
+requires = ["script-hook-v", "asi-loader"]
+verified = false
+files = ["NativeTrainer.asi"]

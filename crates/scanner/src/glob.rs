@@ -63,6 +63,14 @@ impl Glob {
         &self.source
     }
 
+    /// True when the pattern names exactly one path (no `*`, `?` or `**`).
+    pub fn is_literal(&self) -> bool {
+        self.segments.iter().all(|s| match s {
+            Segment::AnyDepth => false,
+            Segment::Pattern(p) => !p.iter().any(|c| matches!(c, '*' | '?')),
+        })
+    }
+
     /// True when `path` matches, anchored at the root and case-insensitively.
     pub fn matches(&self, path: &RelPath) -> bool {
         let lowered = path.as_str().to_lowercase();
@@ -159,6 +167,15 @@ mod tests {
         assert!(m("**/x.dll", "a/b/x.dll"));
         assert!(m("**", "any/thing"));
         assert!(m("a/**/**", "a/b"));
+    }
+
+    #[test]
+    fn literal_patterns() {
+        assert!(Glob::new("ScriptHookV.dll").unwrap().is_literal());
+        assert!(Glob::new("scripts/NativeUI.dll").unwrap().is_literal());
+        assert!(!Glob::new("scripts/*.dll").unwrap().is_literal());
+        assert!(!Glob::new("a?.asi").unwrap().is_literal());
+        assert!(!Glob::new("mods/**").unwrap().is_literal());
     }
 
     #[test]

@@ -1,0 +1,10 @@
+# OpenIV.asi: loads the OpenIV "mods" folder. Installed by OpenIV's ASI Manager. Legacy only.
+# ASSUMPTION A-08.
+id = "openiv-asi"
+name = "OpenIV ASI"
+category = "uncategorized"
+editions = ["legacy"]
+requires = ["asi-loader"]
+verified = false
+files = ["OpenIV.asi"]
+optional = ["OpenIV.log"]

@@ -1,0 +1,9 @@
+# The OpenIV "mods" folder: modified copies of game archives, loaded by OpenIV.asi.
+# Managed as one item. Legacy only. ASSUMPTION A-08.
+id = "openiv-mods-folder"
+name = "OpenIV mods folder"
+category = "uncategorized"
+editions = ["legacy"]
+requires = ["openiv-asi"]
+verified = false
+files = ["mods/**"]
