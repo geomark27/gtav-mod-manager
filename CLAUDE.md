@@ -14,13 +14,16 @@ CONTRIBUTION` block in their report (`agent:`, `what:`, `why:`, `files:`, `test:
 and the orchestrator consolidates it.
 
 `make devlog` (part of `make check`) checks the current branch's entry against `develop`. CI runs
-only on the promotion PR to `main` (tests before a release), not on every branch.
+only on the promotion PR to `main`, not on every branch; `make release bump=…` runs the same
+checks locally before the version commit.
 
 ## Branches and releases
 
-Work on `feature/*`, `fix/*`, `docs/*` or `release/*`; **never commit on `main` or `develop`** —
-they only receive merges, through a PR with a merge commit. `make start name=<topic>
+Work on `feature/*`, `fix/*`, `docs/*` or `release/*`; **never commit work on `main` or
+`develop`** — they only receive merges, through a PR with a merge commit. `make start name=<topic>
 type=feature|fix|docs|release` creates the branch.
 
-Release: see [docs/release.md](docs/release.md). Only the project owner runs `make promote` and
+Release: from `main`, one command — `make release bump=patch|minor|major` runs the checks, commits
+the version on `main`, tags and publishes (see [docs/release.md](docs/release.md)); that version
+commit is the only commit made on `main`. Only the project owner runs `make promote` and
 `make release`; agents never run them, and never run git or `gh` commands that write.
