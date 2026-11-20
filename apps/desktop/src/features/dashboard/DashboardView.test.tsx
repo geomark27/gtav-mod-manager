@@ -3,7 +3,7 @@ import { screen, within } from "@testing-library/react";
 import type { DashboardDto } from "../../bindings/DashboardDto";
 import { makeTxn } from "../activity/testing";
 import { renderWithProviders } from "../installations/testing";
-import { OK_GUARD } from "../mods/testing";
+import { NO_VANILLA, OK_GUARD } from "../mods/testing";
 import { DashboardView } from "./DashboardView";
 
 afterEach(() => clearMocks());
@@ -33,7 +33,11 @@ function makeDashboard(over: Partial<DashboardDto> = {}): DashboardDto {
 }
 
 function mockDashboard(data: DashboardDto) {
-  mockIPC((cmd) => (cmd === "dashboard" ? data : undefined));
+  mockIPC((cmd) => {
+    if (cmd === "dashboard") return data;
+    if (cmd === "vanilla_status") return NO_VANILLA;
+    return undefined;
+  });
 }
 
 describe("DashboardView", () => {

@@ -7,6 +7,7 @@ import { guardNotice } from "../guards/blocking";
 import { useGuardStatus } from "../guards/useGuardStatus";
 import { ImportZipButton } from "../import/ImportZip";
 import { ErrorMessage } from "../installations/ErrorMessage";
+import { VanillaPanel } from "../vanilla/VanillaPanel";
 import { CATEGORIES } from "../inventory/labels";
 import { ModDetailsDialog } from "./ModDetailsDialog";
 import { ModGroup } from "./ModGroup";
@@ -48,6 +49,7 @@ export function ModsView({ installationId, name }: { installationId: string; nam
       {reconcile.isPending ? <p className={styles.muted}>Checking files…</p> : null}
       {mods.data ? (
         <>
+          <VanillaPanel installationId={installationId} blockedReason={blockedReason} />
           <ModsToolbar
             filters={filters}
             onChange={setFilters}

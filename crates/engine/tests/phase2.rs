@@ -398,3 +398,37 @@ fn gc_crash_at_every_operation_stays_consistent() {
     }
     println!("fault-injection (crash) vault_gc: {n} cases");
 }
+
+#[test]
+fn provenance_travels_with_the_plan_and_old_journals_read_as_manual() {
+    use gmm_domain::{ModSource, ModSourceKind};
+
+    let fx = Fixture::new();
+    let (_dir, staged) = stage(&[("scripts/p.asi", b"p bytes")]);
+    let entries =
+        import_to_vault(&StdFs, &fx.vault, &staged, TransactionId::new()).expect("import");
+    let id = ModId::new();
+    let source = ModSource::zip_import("p.zip", Some(Sha256::from_bytes([7; 32])));
+    let wanted = source.clone();
+    fx.run(move |ctx| {
+        plan_register_imported(ctx, id, "P", Category::Vehicles, None, &entries)
+            .map(|p| p.with_source(source))
+    });
+    let m = fx.db.get_mod(id).expect("db").expect("mod");
+    assert_eq!(m.source, wanted);
+    assert_eq!(m.source.kind, ModSourceKind::ZipImport);
+
+    // with_source on a plan that creates no mod changes nothing.
+    let fs = StdFs;
+    let ctx = fx.ctx(&fs);
+    let plan = plan_enable(&ctx, &[id]).expect("plan");
+    let same = plan.clone().with_source(ModSource::manual());
+    assert_eq!(same.summary, plan.summary);
+
+    // An adoption payload journaled before provenance existed reads back as manual.
+    let old = r#"{"mod_id":"00000000-0000-7000-8000-000000000001","name":"Old",
+        "category":"vehicles","notes":null,"entries":[],"included_unknown":false}"#;
+    let payload: AdoptPayload = serde_json::from_str(old).expect("old payload");
+    assert_eq!(payload.source, ModSource::manual());
+    assert_eq!(payload.initial_state, ModState::Enabled);
+}

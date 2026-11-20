@@ -4,7 +4,8 @@ use std::collections::HashSet;
 
 use chrono::{DateTime, Utc};
 use gmm_domain::{
-    DesiredState, InstallationId, ModId, Profile, ProfileEntry, ProfileId, VANILLA_PROFILE_NAME,
+    DesiredState, InstallationId, ModId, Profile, ProfileEntry, ProfileId, ProfileKind,
+    VANILLA_PROFILE_NAME,
 };
 use rusqlite::{Connection, OptionalExtension, Row, params};
 
@@ -16,17 +17,19 @@ use crate::time::{from_db, to_db};
 /// Maximum length of a profile name, in characters (after trimming).
 const MAX_NAME_CHARS: usize = 60;
 
-const PROFILE_COLUMNS: &str = "id, installation_id, name, created_at, updated_at";
+const PROFILE_COLUMNS: &str = "id, installation_id, name, created_at, updated_at, kind";
 
 fn profile_from_row(r: &Row<'_>) -> Result<Profile> {
     let id: String = r.get(0)?;
     let inst: String = r.get(1)?;
     let created: String = r.get(3)?;
     let updated: String = r.get(4)?;
+    let kind: String = r.get(5)?;
     Ok(Profile {
         id: parse_col("profiles", "id", &id)?,
         installation_id: parse_col("profiles", "installation_id", &inst)?,
         name: r.get(2)?,
+        kind: parse_col::<ProfileKind>("profiles", "kind", &kind)?,
         created_at: from_db("profiles", "created_at", &created)?,
         updated_at: from_db("profiles", "updated_at", &updated)?,
     })
@@ -122,6 +125,22 @@ fn insert_entries(conn: &Connection, entries: &[ProfileEntry]) -> Result<()> {
     Ok(())
 }
 
+fn insert_profile(conn: &Connection, p: &Profile, name: &str) -> Result<()> {
+    conn.execute(
+        &format!("INSERT INTO profiles ({PROFILE_COLUMNS}) VALUES (?1,?2,?3,?4,?5,?6)"),
+        params![
+            p.id.to_string(),
+            p.installation_id.to_string(),
+            name,
+            to_db(p.created_at),
+            to_db(p.updated_at),
+            p.kind.as_str(),
+        ],
+    )
+    .map_err(conflict_map)?;
+    Ok(())
+}
+
 fn profile_installation(conn: &Connection, id: ProfileId) -> Result<InstallationId> {
     let inst: Option<String> = conn
         .query_row(
@@ -150,17 +169,52 @@ impl Database {
             });
         }
         check_entries(&tx, p.id, p.installation_id, entries)?;
+        insert_profile(&tx, p, name)?;
+        insert_entries(&tx, entries)?;
+        tx.commit()?;
+        Ok(())
+    }
+
+    /// Returns the restore point of an installation (the snapshot taken before vanilla mode),
+    /// with its entries.
+    pub fn restore_point(
+        &self,
+        installation_id: InstallationId,
+    ) -> Result<Option<(Profile, Vec<ProfileEntry>)>> {
+        let id: Option<String> = self
+            .conn()
+            .query_row(
+                "SELECT id FROM profiles WHERE installation_id = ?1 AND kind = 'restore_point'",
+                [installation_id.to_string()],
+                |r| r.get(0),
+            )
+            .optional()?;
+        match id {
+            Some(id) => self.get_profile(parse_col("profiles", "id", &id)?),
+            None => Ok(None),
+        }
+    }
+
+    /// Stores `p` (which must be of kind `RestorePoint`) as the restore point of its
+    /// installation, deleting the previous one, in one transaction. Same name and entry rules
+    /// as [`Database::create_profile`]; nothing changes on failure.
+    pub fn replace_restore_point(&self, p: &Profile, entries: &[ProfileEntry]) -> Result<()> {
+        if p.kind != ProfileKind::RestorePoint {
+            return Err(invalid("a restore point must be of kind restore_point"));
+        }
+        let name = clean_name(&p.name)?;
+        let tx = self.conn().unchecked_transaction()?;
         tx.execute(
-            &format!("INSERT INTO profiles ({PROFILE_COLUMNS}) VALUES (?1,?2,?3,?4,?5)"),
-            params![
-                p.id.to_string(),
-                p.installation_id.to_string(),
-                name,
-                to_db(p.created_at),
-                to_db(p.updated_at),
-            ],
-        )
-        .map_err(conflict_map)?;
+            "DELETE FROM profiles WHERE installation_id = ?1 AND kind = 'restore_point'",
+            [p.installation_id.to_string()],
+        )?;
+        if name_taken(&tx, p.installation_id, name, None)? {
+            return Err(Error::Conflict {
+                what: "profile name",
+            });
+        }
+        check_entries(&tx, p.id, p.installation_id, entries)?;
+        insert_profile(&tx, p, name)?;
         insert_entries(&tx, entries)?;
         tx.commit()?;
         Ok(())
@@ -170,12 +224,12 @@ impl Database {
     /// (case-insensitive), then id.
     pub fn list_profiles(&self, installation_id: InstallationId) -> Result<Vec<(Profile, u32)>> {
         let mut stmt = self.conn().prepare(
-            "SELECT p.id, p.installation_id, p.name, p.created_at, p.updated_at, \
+            "SELECT p.id, p.installation_id, p.name, p.created_at, p.updated_at, p.kind, \
              (SELECT COUNT(*) FROM profile_entries e WHERE e.profile_id = p.id) \
              FROM profiles p WHERE p.installation_id = ?1 ORDER BY lower(p.name), p.id",
         )?;
         let rows = stmt.query_map([installation_id.to_string()], |r| {
-            let count: i64 = r.get(5)?;
+            let count: i64 = r.get(6)?;
             Ok(profile_from_row(r).and_then(|p| {
                 let c = u32::try_from(count).map_err(|_| Error::Corrupt {
                     table: "profile_entries",

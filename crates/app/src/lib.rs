@@ -22,6 +22,7 @@ pub mod scan;
 pub mod status;
 pub mod toggle;
 mod txn;
+pub mod vanilla;
 pub mod vault;
 
 pub use adopt::{AdoptFileDto, AdoptPreviewDto, AdoptRequest, BlockedFileDto};
@@ -41,7 +42,7 @@ pub use installations::{DiscoveredInstallationDto, InstallationDto, RegisterInst
 pub use inventory::{InventoryFilterDto, InventoryItemDto, InventoryPageDto, InventorySummaryDto};
 pub use lock::InstanceLock;
 pub use logging::{LogGuard, init_logging};
-pub use mods::{ModConflictDto, ModDetailDto, ModDto, ModEntryDto};
+pub use mods::{ModConflictDto, ModDetailDto, ModDto, ModEntryDto, ModSourceDto};
 pub use operation::{
     NullSink, OperationKind, OperationStatusDto, ProgressDto, ProgressSink, ThrottledSink,
 };
@@ -52,4 +53,5 @@ pub use profiles::{
 pub use scan::{ClassCountDto, ScanDto, ScanStatusDto, ScanSummaryDto};
 pub use status::{AppStatusDto, RecoveryDto};
 pub use toggle::{AffectedModDto, DriftDto, DriftKindDto, PlanPreviewDto, PlannedActionDto};
+pub use vanilla::VanillaStatusDto;
 pub use vault::{VaultObjectDto, VaultReportDto};

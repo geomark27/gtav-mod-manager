@@ -23,6 +23,24 @@ persisted_enum!(
     }
 );
 
+persisted_enum!(
+    /// What a stored profile is for.
+    ProfileKind, "profile kind" {
+        User => "user",
+        RestorePoint => "restore_point",
+    }
+);
+
+#[allow(
+    clippy::derivable_impls,
+    reason = "persisted_enum! cannot mark a #[default] variant"
+)]
+impl Default for ProfileKind {
+    fn default() -> Self {
+        Self::User
+    }
+}
+
 /// A stored profile.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Profile {
@@ -32,6 +50,10 @@ pub struct Profile {
     pub installation_id: InstallationId,
     /// Unique name within the installation.
     pub name: String,
+    /// A profile made by the user, or the snapshot taken before vanilla mode (at most one per
+    /// installation).
+    #[serde(default)]
+    pub kind: ProfileKind,
     /// Creation time.
     pub created_at: DateTime<Utc>,
     /// Last update time.
@@ -63,6 +85,16 @@ mod tests {
     }
 
     #[test]
+    fn kind_contract() {
+        crate::macros::assert_enum_contract(
+            &ProfileKind::ALL,
+            &["user", "restore_point"],
+            ProfileKind::as_str,
+        );
+        assert_eq!(ProfileKind::default(), ProfileKind::User);
+    }
+
+    #[test]
     fn names() {
         assert_eq!(VANILLA_PROFILE_NAME, "Vanilla");
         assert_eq!(SUGGESTED_PROFILE_NAMES.len(), 5);
@@ -76,6 +108,7 @@ mod tests {
             id: ProfileId::new(),
             installation_id: InstallationId::new(),
             name: "Visual Overhaul".into(),
+            kind: ProfileKind::User,
             created_at: now,
             updated_at: now,
         };

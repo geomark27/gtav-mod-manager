@@ -11,7 +11,7 @@ Status: v0.1 · 2026-11-18 · Maintained by the Tech Lead only (agents never edi
 | Developers  | Claude Sonnet 5.5 (medium) subagents   | Write code and tests for one task; light verification of their own crate/module. |
 | Runners     | opencode `deepseek-v4.1-flash-free`    | Dependency installs, full builds, full test/lint suites, reports. Never edit code. |
 
-Working copy is local only (no git for now). Tasks in the same wave never share files.
+Git flow: `feature|fix|docs|release/*` branches into `develop`, promoted to `main` (see `docs/release.md`). Tasks in the same wave never share files.
 
 ## Phase 1 — MVP
 
@@ -96,7 +96,7 @@ All code tasks by Sonnet 5.5 medium (1 round each unless noted); runners by open
 
 ## Phase 4 — Mod recognition (planned, target v0.2.0)
 
-Status: **documented, not started** (2026-11-19). Decided with the owner after the first use of
+Status: **in progress** (2026-11-19) — R4 and R5 done on `feature/provenance-vanilla`; R1 waits for A-08. Decided with the owner after the first use of
 v0.1.0 on a real GTA V Enhanced installation that already had mods (Rampage Trainer).
 
 ### Problem
@@ -192,9 +192,9 @@ mod before playing online and a one-click **restore**.
 | ---- | ---------- | ---- | ----- |
 | R1 | — | M | scanner |
 | R2 | R1 | S | scanner |
-| R5 | — | S | store + app |
+| R5 | — | S | store + app — **Done** (schema v3; `installed_at` dropped: same as `created_at`) |
 | R3 | R1, R2, R5 | M | app + UI |
-| R4 | — | S | app + UI |
+| R4 | — | S | app + UI — **Done** (restore point = `profiles.kind = 'restore_point'`) |
 | R6 | all | S | owner + TL |
 
 R1, R4 and R5 can run in parallel (different crates/screens).

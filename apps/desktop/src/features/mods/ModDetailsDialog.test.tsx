@@ -21,6 +21,20 @@ describe("mod details", () => {
     expect(within(dialog).getByText("abcdef01")).toBeInTheDocument();
   });
 
+  it("shows where the mod came from", async () => {
+    mockModsIpc({
+      mods: [
+        makeMod({
+          state: "disabled",
+          source: { kind: "zip_import", detail: "Alpha v2.zip", sha256: "ff00", version: null },
+        }),
+      ],
+    });
+    const dialog = await open("Alpha");
+    const source = await within(dialog).findByText(/^Source: Imported from Alpha v2\.zip on /);
+    expect(source).toHaveAttribute("title", "ff00");
+  });
+
   it("Save is disabled until something changes, then sends the update", async () => {
     const mock = mockModsIpc({ mods: [makeMod({ state: "enabled" })] });
     const dialog = await open("Alpha");
