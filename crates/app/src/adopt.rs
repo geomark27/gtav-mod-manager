@@ -3,7 +3,7 @@
 use std::collections::{HashMap, HashSet};
 
 use gmm_domain::{
-    Category, Classification, Evidence, InstallationId, InventoryItem, ModId, RelPath,
+    Category, Classification, Evidence, InstallationId, InventoryItem, ModId, ModSource, RelPath,
 };
 use gmm_engine::plan_adopt;
 use gmm_store::{Database, InventoryFilter};
@@ -89,7 +89,7 @@ struct Selection {
     blocked: Vec<BlockedFileDto>,
 }
 
-fn block_reason(item: &InventoryItem) -> Option<&'static str> {
+pub(crate) fn block_reason(item: &InventoryItem) -> Option<&'static str> {
     use Classification as C;
     match item.classification {
         C::Original | C::OriginalModified => return Some("Part of the game"),
@@ -295,14 +295,18 @@ impl App {
     ) -> Result<ModDto, AppError> {
         let id = parse_id(&req.installation_id)?;
         self.run_operation(OperationKind::Adopt, sink, |op| {
-            self.adopt_inner(id, req, op)
+            self.adopt_inner(id, req, ModSource::manual(), true, op)
         })
     }
 
-    fn adopt_inner(
+    /// Adopts one selection as a mod with the given provenance. `rescan` refreshes the
+    /// inventory after the commit (bulk adoption rescans once at the end instead).
+    pub(crate) fn adopt_inner(
         &self,
         id: InstallationId,
         req: AdoptRequest,
+        source: ModSource,
+        rescan: bool,
         op: &Operation<'_>,
     ) -> Result<ModDto, AppError> {
         let name = check_mod_name(&req.name)?;
@@ -349,7 +353,7 @@ impl App {
         let rels: Vec<RelPath> = sel.files.into_iter().map(|(r, _)| r).collect();
         let mod_id = ModId::new();
         // Adoption copies files into the vault; it never writes to the game folder.
-        let committed = self.commit_plan(op, &inst, false, |ctx| {
+        let committed = self.commit_plan_with(op, &inst, false, rescan, |ctx| {
             plan_adopt(
                 ctx,
                 mod_id,
@@ -359,6 +363,7 @@ impl App {
                 &rels,
                 includes_unknown,
             )
+            .map(|plan| plan.with_source(source))
         })?;
         if committed.is_none() {
             return Err(AppError::new(

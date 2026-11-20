@@ -73,13 +73,8 @@ fn specificity(sig: &Signature) -> (usize, usize) {
     (sig.required_count(), sig.literal_count())
 }
 
-/// True when the files satisfy every required constraint of the signature.
 fn satisfied(sig: &Signature, files: &[&RelPath]) -> bool {
-    sig.files.iter().all(|g| files.iter().any(|f| g.matches(f)))
-        && sig
-            .any_of
-            .iter()
-            .all(|group| group.iter().any(|g| files.iter().any(|f| g.matches(f))))
+    sig.is_satisfied_by(files)
 }
 
 /// Matches `items` (candidate and unknown files of a scan) against the signatures.

@@ -9,7 +9,7 @@ use chrono::{DateTime, Utc};
 use gmm_domain::{InstallationId, InstallationStatus};
 use gmm_engine::{RecoveryReport, Vault, recover};
 use gmm_platform::{AppDirs, StdFs};
-use gmm_scanner::{Catalogs, DiscoveryHints, OsProbe, SystemOs};
+use gmm_scanner::{Catalogs, DiscoveryHints, OsProbe, Signatures, SystemOs};
 use gmm_store::Database;
 
 use crate::error::{AppError, ErrorCode};
@@ -55,6 +55,8 @@ pub struct App {
     pub(crate) os: Arc<dyn OsProbe>,
     pub(crate) space: Arc<dyn SpaceProbe>,
     pub(crate) catalogs: Catalogs,
+    /// Known-mod signatures (Phase 4 recognition).
+    pub(crate) signatures: Signatures,
     pub(crate) hints: DiscoveryHints,
     /// What startup recovery did.
     pub(crate) recovery: RecoveryReport,
@@ -94,6 +96,7 @@ impl App {
         let recovery = recover_at_startup(&db, &dirs)?;
         crate::import::remove_leftover_staging(&dirs);
         let catalogs = Catalogs::load()?;
+        let signatures = Signatures::load(&catalogs)?;
         let schema_version = db.schema_version()?;
         tracing::info!(
             data_dir = %dirs.data_dir.display(),
@@ -110,6 +113,7 @@ impl App {
             os: options.os,
             space: options.space,
             catalogs,
+            signatures,
             hints: options.hints,
             recovery,
             op: Mutex::new(None),
