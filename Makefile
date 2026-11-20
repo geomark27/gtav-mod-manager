@@ -147,14 +147,14 @@ version: ## Show the version in the three files and the last tag
 notes: ## Show what is unpublished ([Unreleased] in CHANGELOG.md)
 	@bash scripts/changelog-notes.sh Unreleased
 
-bump: ## On a work branch: set the version and turn [Unreleased] into it: make bump bump=patch|minor|major | ver=X.Y.Z (DRY_RUN=1 simulates)
+bump: ## Set the version and turn [Unreleased] into it (from develop/main: creates release/vX-Y-Z first): make bump bump=patch|minor|major | ver=X.Y.Z (DRY_RUN=1 simulates)
 	@bash scripts/bump.sh "$(bump)" "$(ver)" $(if $(DRY_RUN),--dry-run)
 
 updater-key: ## Once, on a work branch: create the updater signing key, upload it as a secret and write the public key
 	@bash scripts/updater-key.sh
 
 release: ## After make promote: tag origin/main and open the release; Actions builds, signs and publishes (DRY_RUN=1 simulates)
-	@[ -z "$(bump)$(ver)" ] || { echo "✗ make release does not change the version: do that with make bump on a release/* branch" >&2; exit 1; }
+	@[ -z "$(bump)$(ver)" ] || { echo "✗ make release does not change the version: run make bump first (from develop it creates the release branch)" >&2; exit 1; }
 	@YES="$(yes)" bash scripts/release.sh $(if $(DRY_RUN),--dry-run)
 
 ##@ Quality

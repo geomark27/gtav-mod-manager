@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Set the version of GTA V Mod Manager on a work branch (it never commits):
+# Set the version of GTA V Mod Manager on a work branch (it never commits). Run from develop or
+# main, it first creates release/vX-Y-Z from an up-to-date develop and bumps there:
 #   - writes the version to the root Cargo.toml ([workspace.package]), tauri.conf.json,
 #     package.json, the two root fields of package-lock.json and the gmm-* entries of Cargo.lock;
 #   - turns [Unreleased] in CHANGELOG.md into the new version and updates the links at the end;
@@ -22,16 +23,61 @@ version=${2#v}
 dry_run=false
 [[ ${3:-} == "--dry-run" ]] && dry_run=true
 
+# [workspace.package] version of the Cargo.toml read on stdin.
+workspace_version() {
+  awk '/^\[workspace\.package\]/{s=1;next} /^\[/{s=0} s && /^version = "/{gsub(/^version = "|"$/,"");print;exit}'
+}
+
+# The target version for `current` from bump= or ver= (printed; dies on bad input).
+target_version() {
+  local current=$1 major minor patch
+  [[ -z $bump || -z $version ]] || die "use bump= or ver=, not both"
+  if [[ -z $bump ]]; then
+    echo "$version"
+    return
+  fi
+  IFS=. read -r major minor patch <<<"$current"
+  case $bump in
+    patch) echo "$major.$minor.$((patch + 1))" ;;
+    minor) echo "$major.$((minor + 1)).0" ;;
+    major) echo "$((major + 1)).0.0" ;;
+    *) die "invalid bump: '$bump' (patch, minor or major)" ;;
+  esac
+}
+
 branch=$(git branch --show-current)
 case "$branch" in
   feature/*|fix/*|docs/*|release/*) ;;
-  main|develop|"")
-    echo "✗ the version is bumped on a work branch, not on '${branch:-HEAD}':" >&2
-    echo "  main and develop only receive merges. Create one and bump there:" >&2
-    echo "    make start name=release-X-Y-Z type=release" >&2
-    echo "    make bump ver=X.Y.Z" >&2
-    exit 1
+  main|develop)
+    # main and develop only receive merges: the bump goes on its own release branch, cut
+    # from develop (the version is computed from develop, which is what will ship).
+    if ! $dry_run; then
+      [[ -z $(git status --porcelain) ]] \
+        || die "there are uncommitted changes: commit or stash them before bumping"
+      make --no-print-directory sync
+    fi
+    base=$(git show develop:Cargo.toml | workspace_version)
+    [[ $base =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "could not read the version of develop's Cargo.toml"
+    target=$(target_version "$base") || exit 1
+    [[ $target =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+      || die "give the version: make bump bump=patch|minor|major  (or ver=X.Y.Z)"
+    topic="v${target//./-}"
+    if git show-ref --verify --quiet "refs/heads/release/$topic"; then
+      die "release/$topic already exists: git switch release/$topic, then make bump ver=$target"
+    fi
+    if $dry_run; then
+      echo "→ Would create release/$topic from develop and bump it to $target there."
+      if [[ $branch != develop ]]; then
+        echo "  (Run the dry run from develop to preview the notes and the devlog too.)"
+        exit 0
+      fi
+    else
+      step "Creating release/$topic from develop"
+      make --no-print-directory start name="$topic" type=release
+      exec bash scripts/bump.sh "" "$target"
+    fi
     ;;
+  "") die "detached HEAD: switch to develop or to a work branch first" ;;
   *) die "'$branch' is not a work branch (feature/*, fix/*, docs/* or release/*)" ;;
 esac
 if [[ -n $(git status --porcelain) ]]; then
@@ -44,20 +90,9 @@ if [[ -n $(git status --porcelain) ]]; then
 fi
 
 # The version lives in three files; the workspace Cargo.toml is the source of truth.
-current=$(awk '/^\[workspace\.package\]/{s=1;next} /^\[/{s=0} s && /^version = "/{gsub(/^version = "|"$/,"");print;exit}' Cargo.toml)
+current=$(workspace_version < Cargo.toml)
 [[ $current =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "could not read [workspace.package] version from Cargo.toml"
-if [[ -n $bump && -n $version ]]; then
-  die "use bump= or ver=, not both"
-fi
-if [[ -n $bump ]]; then
-  IFS=. read -r major minor patch <<<"$current"
-  case $bump in
-    patch) version="$major.$minor.$((patch + 1))" ;;
-    minor) version="$major.$((minor + 1)).0" ;;
-    major) version="$((major + 1)).0.0" ;;
-    *) die "invalid bump: '$bump' (patch, minor or major)" ;;
-  esac
-fi
+version=$(target_version "$current") || exit 1
 [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] \
   || die "give the version: make bump bump=patch|minor|major  (or ver=X.Y.Z)"
 tag="v$version"

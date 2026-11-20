@@ -62,21 +62,27 @@ The version lives in three files and must match everywhere:
 
 `make bump` writes all of them, the two root fields of `apps/desktop/package-lock.json` and the
 `gmm-*` entries of `Cargo.lock`, turns `[Unreleased]` in `CHANGELOG.md` into the version's section
-and closes the devlog for the version (`docs/devlog/releases/vX.Y.Z.md`). Only on a `release/*`
-branch (it also works on `feature/*`, `fix/*` and `docs/*`):
+and closes the devlog for the version (`docs/devlog/releases/vX.Y.Z.md`). It never commits.
+
+From `develop` or `main` it does everything in one step: it fast-forwards `develop`, computes the
+new version from `develop`, creates `release/vX-Y-Z` from it (like `make start`) and bumps there.
 
 ```sh
-make start name=release-0.2.0 type=release
-make bump bump=minor              # or: make bump ver=0.2.0, or ver=v0.2.0
-#    DRY_RUN=1 make bump bump=minor   shows what it would do and how many devlog entries ship
+make bump bump=minor              # or: make bump ver=0.2.0, or ver=v0.2.0 → on release/v0-2-0
+#    DRY_RUN=1 make bump bump=minor   shows the branch, the version, the notes and how many
+#                                      devlog entries ship (run it from develop for the full view)
 make check
 git add -A && git commit -m "release: v0.2.0"
 make ship                         # to develop
 ```
 
-Then promote and release (next two sections). `make bump` refuses on `main` and `develop`, with a
-dirty working tree, with a version that is lower than the current one, and with a tag that already
-exists. It warns when no devlog entry would ship with the version.
+On a work branch (`release/*`, `feature/*`, `fix/*`, `docs/*`) it bumps that branch as it is.
+`make bump` refuses with a dirty working tree, with both `bump=` and `ver=`, with a version lower
+than the current one, with a tag that already exists, and when the release branch already exists
+(switch to it and run `make bump ver=X.Y.Z` there). It warns when no devlog entry would ship with
+the version.
+
+Then promote and release (next two sections).
 
 The very first release is `make bump ver=0.1.0`: the version is already `0.1.0` everywhere, so only
 `[Unreleased]` is turned into `[0.1.0]` and the devlog is closed.
