@@ -11,6 +11,10 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 
 ## [Unreleased]
 
+### Added
+
+- Before playing online: the Dashboard's "Prepare for online" disables every mod, scans the game folder and lists anything left that could be a mod — unmanaged loaders and plugins, unrecognized files, modified original files, leftovers — with how to fix each one. "Check only" lists them without changing anything. It never claims that playing online is safe.
+
 ## [0.2.0] - 2026-11-19
 
 ### Added

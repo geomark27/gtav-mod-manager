@@ -95,6 +95,8 @@ describe("ipc", () => {
     await commands.deleteProfile("p1");
     await commands.previewApplyProfile("i1", VANILLA_PROFILE_ID);
     await commands.applyProfile("i1", "p1");
+    await commands.checkOnlineReadiness("i1");
+    await commands.prepareForOnline("i1");
     await commands.vanillaStatus("i1");
     await commands.enterVanilla("i1");
     await commands.restoreFromVanilla("i1");
@@ -114,6 +116,8 @@ describe("ipc", () => {
       ["delete_profile", { profileId: "p1" }],
       ["preview_apply_profile", { installationId: "i1", profileId: "vanilla" }],
       ["apply_profile", { installationId: "i1", profileId: "p1" }],
+      ["check_online_readiness", { installationId: "i1" }],
+      ["prepare_for_online", { installationId: "i1" }],
       ["vanilla_status", { installationId: "i1" }],
       ["enter_vanilla", { installationId: "i1" }],
       ["restore_from_vanilla", { installationId: "i1" }],

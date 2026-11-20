@@ -17,6 +17,7 @@ pub mod inventory;
 pub mod lock;
 pub mod logging;
 pub mod mods;
+pub mod online;
 pub mod operation;
 pub mod profiles;
 pub mod scan;
@@ -49,6 +50,9 @@ pub use inventory::{InventoryFilterDto, InventoryItemDto, InventoryPageDto, Inve
 pub use lock::InstanceLock;
 pub use logging::{LogGuard, init_logging};
 pub use mods::{ModConflictDto, ModDetailDto, ModDto, ModEntryDto, ModSourceDto};
+pub use online::{
+    CheckStatus, OnlineCheckDto, ReadinessCheckDto, ReadinessCheckId, ReadinessVerdict,
+};
 pub use operation::{
     NullSink, OperationKind, OperationStatusDto, ProgressDto, ProgressSink, ThrottledSink,
 };

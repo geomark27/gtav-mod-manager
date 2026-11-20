@@ -21,7 +21,7 @@ use crate::app::App;
 use crate::error::{AppError, ErrorCode};
 use crate::guards::GuardNeeds;
 use crate::installations::{not_found, parse_id};
-use crate::operation::{OperationKind, ProgressSink};
+use crate::operation::{Operation, OperationKind, ProgressSink};
 use crate::profiles::{ProfileDto, current_entries, profile_dto, profile_plan};
 
 /// Prefix of the name of the restore point.
@@ -146,28 +146,39 @@ impl App {
     ) -> Result<VanillaStatusDto, AppError> {
         let id = parse_id(installation_id)?;
         self.run_operation(OperationKind::Transaction, sink, |op| {
-            let inst = self.load_validated(id)?;
-            self.check_guards_id(
-                id,
-                GuardNeeds {
-                    game_folder_writes: true,
-                    ..GuardNeeds::default()
-                },
-            )?;
-            let mods = self.lock_db()?.list_mods(id)?;
-            if mods.iter().all(|m| m.state == ModState::Disabled) {
-                return status(&*self.lock_db()?, id);
-            }
-            let ids: Vec<ModId> = mods.iter().map(|m| m.id).collect();
-            self.ensure_actionable(&inst, &ids)?;
-            // Saved before the files move: if the transaction fails, the restore point only
-            // describes the state the mods are still in.
-            save_restore_point(&*self.lock_db()?, id)?;
-            let desired: Vec<(ModId, bool)> = ids.iter().map(|m| (*m, false)).collect();
-            self.commit_plan(op, &inst, true, |ctx| profile_plan(ctx, &desired))?;
-            tracing::info!(installation_id = %id, mods = ids.len(), "vanilla mode entered");
+            self.enter_vanilla_inner(id, op)?;
             status(&*self.lock_db()?, id)
         })
+    }
+
+    /// [`App::enter_vanilla`] under an already running operation. Returns `true` when mods
+    /// were disabled, `false` when none had files in the game folder.
+    pub(crate) fn enter_vanilla_inner(
+        &self,
+        id: InstallationId,
+        op: &Operation<'_>,
+    ) -> Result<bool, AppError> {
+        let inst = self.load_validated(id)?;
+        self.check_guards_id(
+            id,
+            GuardNeeds {
+                game_folder_writes: true,
+                ..GuardNeeds::default()
+            },
+        )?;
+        let mods = self.lock_db()?.list_mods(id)?;
+        if mods.iter().all(|m| m.state == ModState::Disabled) {
+            return Ok(false);
+        }
+        let ids: Vec<ModId> = mods.iter().map(|m| m.id).collect();
+        self.ensure_actionable(&inst, &ids)?;
+        // Saved before the files move: if the transaction fails, the restore point only
+        // describes the state the mods are still in.
+        save_restore_point(&*self.lock_db()?, id)?;
+        let desired: Vec<(ModId, bool)> = ids.iter().map(|m| (*m, false)).collect();
+        self.commit_plan(op, &inst, true, |ctx| profile_plan(ctx, &desired))?;
+        tracing::info!(installation_id = %id, mods = ids.len(), "vanilla mode entered");
+        Ok(true)
     }
 
     /// Applies the restore point in one transaction and deletes it once committed. Mods
