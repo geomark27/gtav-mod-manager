@@ -4,9 +4,11 @@ Windows desktop app to detect, inventory and safely enable/disable **story-mode*
 **GTA V** (Legacy and Enhanced) and **Red Dead Redemption 2** — without ever modifying original
 game files. Every change is journaled, verified with SHA-256 and reversible, even after a crash.
 
-ModSwitch was called *GTA V Mod Manager* until Red Dead Redemption 2 support. The repository,
-the installer file name, the Windows install name and the data folder keep the old name, so
-that updates and existing data keep working.
+ModSwitch was called *GTA V Mod Manager* until Red Dead Redemption 2 support. Since v0.6.0 the
+Windows install (Start menu, install folder, uninstall entry, installer file) is named
+ModSwitch too; the first ModSwitch installer removes the old *GTA V Mod Manager* install. The
+repository and the data folder (`%LOCALAPPDATA%\GtavModManager`) keep the old name on purpose:
+the data folder holds the database and the vault with the mods.
 
 > Mods managed here are for story mode. Disabling mods does not make an installation safe for
 > GTA Online or Red Dead Online.
@@ -32,8 +34,8 @@ Tauri 2 · React + TypeScript (Vite) · Rust (workspace of crates) · SQLite.
 ## Download & release
 
 Windows users download the installer from the
-[latest release](https://github.com/geomark27/gtav-mod-manager/releases/latest/download/GTAV-Mod-Manager-windows-x64-setup.exe)
-(`GTAV-Mod-Manager-windows-x64-setup.exe`, `SHA256SUMS.txt` next to it), and the app updates
+[latest release](https://github.com/geomark27/gtav-mod-manager/releases/latest/download/ModSwitch-windows-x64-setup.exe)
+(`ModSwitch-windows-x64-setup.exe`, `SHA256SUMS.txt` next to it), and the app updates
 itself from then on. Releases are built and signed by GitHub Actions; the installer has no
 code-signing certificate, so SmartScreen shows “Windows protected your PC” the first time
 (More info → Run anyway).

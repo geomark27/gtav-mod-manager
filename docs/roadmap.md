@@ -260,7 +260,7 @@ catalog, the processes, discovery, the signatures and the texts.
 | 2 | Guard per game (a running game never blocks the other one; the Rockstar launcher and services block both), 6 RDR2 signatures (Script Hook RDR2 and its .NET port, ASI loader, Native Trainer, Lenny's Mod Loader, ReShade), `lml/<Mod>/` grouped as one mod, online check per game (`OnlineCheckDto.game`, "Red Dead Online" in the UI) | Done (PR #22) |
 | 3 | UI: installations grouped by game (Installations page and sidebar selector), active game under the selector on every page, texts not tied to GTA V, app renamed **ModSwitch** (window, sidebar, messages, release titles, README) | Done |
 | 4 | Validation on a real RDR2 install (file list from the owner) to close A-09 to A-12 | Planned |
-| 5 | Install identity: Tauri `productName` (Start menu, install folder, uninstall entry), the installer file name and the repository still say GTA V Mod Manager. Renaming `productName` makes the NSIS installer install next to the old one instead of updating it, so it needs an installer hook that removes the old install, tested on Windows. The data folder (`GtavModManager`) and the identifier never change: the vault lives there. | Planned |
+| 5 | Install identity: Tauri `productName` and the installer file are **ModSwitch**. An NSIS post-install hook removes the old *GTA V Mod Manager* install (silent uninstall without `/UPDATE`, leftover registry keys and shortcuts) and recreates the Start menu and desktop shortcuts, which an update does not create. The data folder (`GtavModManager`), the identifier and the repository keep their names: the vault lives in the data folder. Windows check: `docs/windows-validation.md` §5.1. | Done (v0.6.0) |
 
 ---
 
