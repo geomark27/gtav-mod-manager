@@ -11,6 +11,8 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-21
+
 ### Added
 
 - Red Dead Redemption 2 installations can be registered next to GTA V: the app recognizes the `RDR2.exe` folder, scans it with its own list of original files and mod patterns (Script Hook RDR2, Lenny's Mod Loader, ASI loader, ReShade) and enables or disables its mods the same way. GTA V mod names are never suggested for RDR2.
@@ -56,7 +58,8 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 - Vault maintenance: garbage collection removes the vault copies no mod points to any more.
 - Windows installer and automatic updates: a per-user NSIS installer in English and Spanish that needs no administrator rights, and signed updates downloaded from GitHub releases. The installer has no code-signing certificate, so SmartScreen shows a warning the first time.
 
-[Unreleased]: https://github.com/geomark27/gtav-mod-manager/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/geomark27/gtav-mod-manager/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/geomark27/gtav-mod-manager/releases/tag/v0.1.0

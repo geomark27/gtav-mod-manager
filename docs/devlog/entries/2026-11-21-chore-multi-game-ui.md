@@ -5,7 +5,7 @@ type: feat
 author: Marcos Ramos Jacome
 agents: claude:orchestrator
 pr: pending
-version: unreleased
+version: v0.4.0
 ---
 
 # ModSwitch: UI grouped by game and the new app name

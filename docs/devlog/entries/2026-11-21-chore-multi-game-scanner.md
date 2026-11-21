@@ -5,7 +5,7 @@ type: feat
 author: Marcos Ramos Jacome
 agents: claude:orchestrator
 pr: pending
-version: unreleased
+version: v0.4.0
 ---
 
 # Red Dead Redemption 2: guard per game, signatures and online check
