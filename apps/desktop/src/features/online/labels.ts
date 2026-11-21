@@ -1,9 +1,10 @@
 import type { BadgeTone } from "../../components/Badge";
 import type { CheckStatus } from "../../bindings/CheckStatus";
-import type { Game } from "../../bindings/Game";
 import type { OnlineCheckDto } from "../../bindings/OnlineCheckDto";
 import type { ReadinessCheckDto } from "../../bindings/ReadinessCheckDto";
+import type { Game } from "../../bindings/Game";
 import type { ReadinessCheckId } from "../../bindings/ReadinessCheckId";
+import { GAME_SHORT, ONLINE_NAME } from "../games/games";
 
 export const STATUS_TONE: Record<CheckStatus, BadgeTone> = {
   pass: "success",
@@ -15,18 +16,6 @@ export const STATUS_LABEL: Record<CheckStatus, string> = {
   pass: "OK",
   warn: "Review",
   fail: "Fix",
-};
-
-/** Short name of each game. */
-export const GAME_SHORT: Record<Game, string> = {
-  gtav: "GTA V",
-  rdr2: "Red Dead Redemption 2",
-};
-
-/** Name of each game's online mode. */
-export const ONLINE_NAME: Record<Game, string> = {
-  gtav: "GTA Online",
-  rdr2: "Red Dead Online",
 };
 
 /** Name of each check, as a statement of what is checked. */

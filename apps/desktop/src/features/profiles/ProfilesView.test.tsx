@@ -145,7 +145,7 @@ describe("ProfilesView", () => {
       guard: { gameRunning: ["GTA5.exe"], writable: true, recoveryRequired: false, installationMissing: false },
     });
     renderView();
-    expect(await screen.findByText(/GTA V or a launcher is running/)).toBeInTheDocument();
+    expect(await screen.findByText(/The game or a launcher is running/)).toBeInTheDocument();
     await userEvent.click(
       within(await item("Story")).getByRole("button", { name: "Preview & apply" }),
     );

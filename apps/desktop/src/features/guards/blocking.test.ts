@@ -16,7 +16,7 @@ describe("guardNotice", () => {
   it("names the running processes", () => {
     expect(guardNotice({ ...OK, gameRunning: ["GTA5.exe", "Steam.exe"] })).toEqual({
       severity: "warning",
-      text: "GTA V or a launcher is running (GTA5.exe, Steam.exe). Close it to change mods.",
+      text: "The game or a launcher is running (GTA5.exe, Steam.exe). Close it to change mods.",
     });
   });
 

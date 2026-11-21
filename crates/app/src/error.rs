@@ -8,7 +8,7 @@ use ts_rs::TS;
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[ts(export)]
 pub enum ErrorCode {
-    /// GTA V is running.
+    /// The game of the installation, or the Rockstar launcher, is running.
     GameRunning,
     /// The installation folder is not writable.
     InstallNotWritable,

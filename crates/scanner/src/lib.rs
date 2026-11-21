@@ -1,4 +1,4 @@
-//! Installation discovery and structural validation for GTA V Mod Manager.
+//! Installation discovery and structural validation for ModSwitch.
 //!
 //! Everything OS-specific goes through [`OsProbe`]; everything file-system related goes
 //! through `gmm_platform::Fs`. Validation never modifies an installation except for the

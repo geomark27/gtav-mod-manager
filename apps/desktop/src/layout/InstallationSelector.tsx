@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { GAME_NAME, GAME_SHORT, groupByGame } from "../features/games/games";
 import {
   useInstallations,
   useSelectedInstallation,
@@ -37,10 +38,14 @@ export function InstallationSelector() {
             Select installation
           </option>
         )}
-        {installations.data.map((i) => (
-          <option key={i.id} value={i.id}>
-            {i.displayName}
-          </option>
+        {groupByGame(installations.data).map(({ game, items }) => (
+          <optgroup key={game} label={GAME_SHORT[game]}>
+            {items.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.displayName}
+              </option>
+            ))}
+          </optgroup>
         ))}
       </select>
     );
@@ -52,6 +57,11 @@ export function InstallationSelector() {
         Active installation
       </label>
       {body}
+      {selected.data ? (
+        <p className={styles.selectorGame} aria-label="Active game">
+          {GAME_NAME[selected.data.game]}
+        </p>
+      ) : null}
     </div>
   );
 }

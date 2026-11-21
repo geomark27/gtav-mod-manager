@@ -1,6 +1,6 @@
 # Changelog
 
-Everything users of GTA V Mod Manager notice is recorded here. The format follows
+Everything users of ModSwitch notice is recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the versions follow
 [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
 
@@ -17,6 +17,11 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 - Detected mods for Red Dead Redemption 2: Script Hook RDR2, its .NET port, the ASI loader, the Native Trainer, Lenny's Mod Loader and ReShade are named, with their requirements. Each mod folder inside `lml` is proposed as one mod.
 - "Before playing online" works for Red Dead Redemption 2 and names Red Dead Online.
 - A running game only blocks changes to its own mods: with GTA V open you can still change Red Dead Redemption 2 mods, and the other way round. The Rockstar Games Launcher and its services block both.
+- Installations are grouped by game on the Installations page and in the sidebar selector, and the sidebar names the game of the active installation.
+
+### Changed
+
+- The app is now called **ModSwitch** (window title, sidebar, messages and release notes). The installer, the Start menu entry and your data keep working as before.
 
 ## [0.3.0] - 2026-11-20
 

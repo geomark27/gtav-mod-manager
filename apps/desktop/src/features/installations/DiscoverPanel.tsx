@@ -87,7 +87,7 @@ export function DiscoverPanel() {
       {discover.error ? <ErrorMessage error={discover.error} /> : null}
       {discover.data ? (
         discover.data.length === 0 ? (
-          <p className={styles.muted}>No GTA V installations were detected.</p>
+          <p className={styles.muted}>No GTA V or Red Dead Redemption 2 installations were detected.</p>
         ) : (
           <ul className={styles.candidates}>
             {discover.data.map((c) => (

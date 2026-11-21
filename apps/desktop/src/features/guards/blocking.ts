@@ -15,7 +15,7 @@ export function guardNotice(guard: GuardStatusDto): GuardNotice | null {
   if (guard.gameRunning.length > 0) {
     return {
       severity: "warning",
-      text: `GTA V or a launcher is running (${guard.gameRunning.join(", ")}). Close it to change mods.`,
+      text: `The game or a launcher is running (${guard.gameRunning.join(", ")}). Close it to change mods.`,
     };
   }
   if (guard.installationMissing) {

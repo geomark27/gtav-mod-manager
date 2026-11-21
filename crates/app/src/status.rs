@@ -148,7 +148,7 @@ mod tests {
         assert_eq!(err.code, ErrorCode::AlreadyRunning);
         assert_eq!(
             err.hint.as_deref(),
-            Some("Close the other window of GTA V Mod Manager.")
+            Some("Close the other window of ModSwitch.")
         );
         drop(first);
         assert!(App::init(dirs).is_ok());

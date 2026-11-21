@@ -1,4 +1,4 @@
-//! Test support for GTA V Mod Manager: fake game installations built inside a temp dir and
+//! Test support for ModSwitch: fake game installations built inside a temp dir and
 //! precise disk snapshots. Intended to be used only as a dev-dependency.
 
 pub mod error;

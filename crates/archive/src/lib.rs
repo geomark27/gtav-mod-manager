@@ -1,4 +1,4 @@
-//! Safe ZIP staging for GTA V Mod Manager. Every archive is treated as hostile: it is fully
+//! Safe ZIP staging for ModSwitch. Every archive is treated as hostile: it is fully
 //! validated, then extracted into a private staging directory, never into a game folder.
 
 pub mod error;

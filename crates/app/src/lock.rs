@@ -28,9 +28,9 @@ impl InstanceLock {
             Ok(()) => Ok(Self { _file: file }),
             Err(TryLockError::WouldBlock) => Err(AppError::new(
                 ErrorCode::AlreadyRunning,
-                "GTA V Mod Manager is already running.",
+                "ModSwitch is already running.",
             )
-            .with_hint("Close the other window of GTA V Mod Manager.")),
+            .with_hint("Close the other window of ModSwitch.")),
             Err(TryLockError::Error(e)) => Err(AppError::new(
                 ErrorCode::Io,
                 "Could not lock the application lock file.",
