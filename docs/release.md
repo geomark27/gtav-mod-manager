@@ -101,7 +101,7 @@ The tag starts `.github/workflows/release.yml`:
    draft release exists.
 2. `build` (windows-latest) — builds the UI, compiles the app with
    `src-tauri/tauri.release.conf.json` (which signs the updater artifact), renames the installer to
-   `GTAV-Mod-Manager-windows-x64-setup.exe`, writes `SHA256SUMS.txt`, uploads both to the release
+   `ModSwitch-windows-x64-setup.exe`, writes `SHA256SUMS.txt`, uploads both to the release
    and keeps the `.sig` as a workflow artifact.
 3. `publish` — builds `latest.json` from the signature and publishes the release as *latest*.
 
@@ -115,7 +115,7 @@ Every release publishes:
 
 | Asset | Purpose |
 | --- | --- |
-| `GTAV-Mod-Manager-windows-x64-setup.exe` | Installer; the fixed name keeps `releases/latest/download/…` pointing at the newest one. |
+| `ModSwitch-windows-x64-setup.exe` | Installer; the fixed name keeps `releases/latest/download/…` pointing at the newest one. |
 | `SHA256SUMS.txt` | SHA-256 of the installer, to verify the download. |
 | `latest.json` | Manifest the built-in updater reads; it needs the `.sig` generated in `build`. |
 

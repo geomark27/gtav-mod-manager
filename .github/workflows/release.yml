@@ -90,7 +90,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         run: npm run tauri build -- --config src-tauri/tauri.release.conf.json
 
-      # Fixed name, so releases/latest/download/GTAV-Mod-Manager-windows-x64-setup.exe always
+      # Fixed name, so releases/latest/download/ModSwitch-windows-x64-setup.exe always
       # points at the newest version. The signature goes apart (sigs/) to build latest.json in
       # «publish».
       - name: Upload to the release
@@ -100,9 +100,9 @@ jobs:
           f=$(find target -type f -path '*/release/bundle/nsis/*' -name '*-setup.exe' | head -1)
           [[ -n "$f" ]] || { echo "::error::the NSIS installer (*-setup.exe) was not generated"; exit 1; }
           [[ -f "$f.sig" ]] || { echo "::error::the updater signature ($f.sig) was not generated: check the TAURI_SIGNING_PRIVATE_KEY secret and tauri.release.conf.json"; exit 1; }
-          cp "$f" dist/GTAV-Mod-Manager-windows-x64-setup.exe
-          cp "$f.sig" sigs/GTAV-Mod-Manager-windows-x64-setup.exe.sig
-          ( cd dist && sha256sum GTAV-Mod-Manager-windows-x64-setup.exe > SHA256SUMS.txt )
+          cp "$f" dist/ModSwitch-windows-x64-setup.exe
+          cp "$f.sig" sigs/ModSwitch-windows-x64-setup.exe.sig
+          ( cd dist && sha256sum ModSwitch-windows-x64-setup.exe > SHA256SUMS.txt )
           ls -l dist sigs
           cat dist/SHA256SUMS.txt
           gh release upload "$TAG" dist/* --clobber
