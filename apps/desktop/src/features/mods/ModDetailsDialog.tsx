@@ -10,7 +10,14 @@ import { ErrorMessage } from "../installations/ErrorMessage";
 import { CategorySelect } from "../inventory/CategorySelect";
 import { sourceLabel } from "./modLabels";
 import styles from "./Mods.module.css";
-import { useForgetMod, useModDetail, useReadoptMod, useRestoreMod, useUpdateMod } from "./useMods";
+import {
+  useDeleteMod,
+  useForgetMod,
+  useModDetail,
+  useReadoptMod,
+  useRestoreMod,
+  useUpdateMod,
+} from "./useMods";
 
 export interface ModDetailsDialogProps {
   installationId: string;
@@ -20,7 +27,17 @@ export interface ModDetailsDialogProps {
   onClose: () => void;
 }
 
-/** Details panel of one mod: files, edit form and "Stop managing". */
+/** What deleting `mod` does, in one paragraph. */
+export function deleteText(mod: Pick<ModDto, "state">, files: number): string {
+  const n = files === 1 ? "Its file is" : `Its ${files} files are`;
+  const where =
+    mod.state === "enabled"
+      ? `${n} removed from the game folder and the app forgets the mod.`
+      : "It has no files in the game folder; the app forgets it.";
+  return `${where} Its stored copy is deleted too, unless another mod uses the same files. This cannot be undone. Original game files are never touched.`;
+}
+
+/** Details panel of one mod: files, edit form, "Delete mod" and "Stop managing". */
 export function ModDetailsDialog({
   installationId,
   mod,
@@ -60,10 +77,11 @@ function DetailsBody({ installationId, mod, detail, blockedReason, onClose }: Bo
   const [name, setName] = useState(detail.name);
   const [category, setCategory] = useState<Category>(detail.category);
   const [notes, setNotes] = useState(detail.notes ?? "");
-  const [confirming, setConfirming] = useState(false);
+  const [confirming, setConfirming] = useState<"forget" | "delete" | null>(null);
   const [resolving, setResolving] = useState<"restore" | "keep" | null>(null);
   const update = useUpdateMod(installationId, mod.id);
   const forget = useForgetMod(installationId);
+  const remove = useDeleteMod(installationId);
   const restore = useRestoreMod(installationId);
   const readopt = useReadoptMod(installationId);
 
@@ -74,6 +92,7 @@ function DetailsBody({ installationId, mod, detail, blockedReason, onClose }: Bo
     trimmed !== detail.name || category !== detail.category || newNotes !== detail.notes;
   const hasVersions = detail.entries.some((e) => e.fileVersion !== null);
   const canStop = mod.state === "enabled" || mod.state === "drifted" || mod.state === "error";
+  const canDelete = mod.state === "enabled" || mod.state === "disabled";
 
   return (
     <div className={styles.stack}>
@@ -192,43 +211,74 @@ function DetailsBody({ installationId, mod, detail, blockedReason, onClose }: Bo
       ) : null}
 
       <div className={styles.stack}>
-        {canStop ? (
-          confirming ? (
-            <>
-              <p>
-                The files stay in the game folder; the app stops tracking them. The vault copy is
-                kept.
-              </p>
-              {forget.error ? <ErrorMessage error={forget.error} /> : null}
-              <div className={styles.actions}>
-                <Button onClick={() => setConfirming(false)} disabled={forget.isPending}>
-                  Keep managing
-                </Button>
-                <Button
-                  variant="danger"
-                  loading={forget.isPending}
-                  onClick={() => forget.mutate(mod.id, { onSuccess: onClose })}
-                >
-                  Confirm stop managing
-                </Button>
-              </div>
-            </>
-          ) : (
+        {confirming === "forget" ? (
+          <>
+            <p>
+              The files stay in the game folder; the app stops tracking them. The vault copy is
+              kept.
+            </p>
+            {forget.error ? <ErrorMessage error={forget.error} /> : null}
             <div className={styles.actions}>
+              <Button onClick={() => setConfirming(null)} disabled={forget.isPending}>
+                Keep managing
+              </Button>
               <Button
                 variant="danger"
-                disabled={blockedReason !== null}
-                title={blockedReason ?? undefined}
-                onClick={() => setConfirming(true)}
+                loading={forget.isPending}
+                onClick={() => forget.mutate(mod.id, { onSuccess: onClose })}
               >
-                Stop managing
+                Confirm stop managing
               </Button>
             </div>
-          )
+          </>
+        ) : confirming === "delete" ? (
+          <>
+            <p>{deleteText(mod, detail.entries.length)}</p>
+            {remove.error ? <ErrorMessage error={remove.error} /> : null}
+            <div className={styles.actions}>
+              <Button onClick={() => setConfirming(null)} disabled={remove.isPending}>
+                Keep the mod
+              </Button>
+              <Button
+                variant="danger"
+                loading={remove.isPending}
+                onClick={() => remove.mutate(mod.id, { onSuccess: onClose })}
+              >
+                Confirm delete
+              </Button>
+            </div>
+          </>
         ) : (
-          <p className={styles.muted}>
-            Only enabled, drifted or error mods can stop being managed.
-          </p>
+          <>
+            <div className={styles.actions}>
+              {canDelete ? (
+                <Button
+                  variant="danger"
+                  disabled={blockedReason !== null}
+                  title={blockedReason ?? undefined}
+                  onClick={() => setConfirming("delete")}
+                >
+                  Delete mod
+                </Button>
+              ) : null}
+              {canStop ? (
+                <Button
+                  disabled={blockedReason !== null}
+                  title={blockedReason ?? undefined}
+                  onClick={() => setConfirming("forget")}
+                >
+                  Stop managing
+                </Button>
+              ) : null}
+            </div>
+            {canDelete ? null : (
+              <p className={styles.muted}>
+                {mod.state === "drifted"
+                  ? "Restore or keep the changed files before deleting this mod."
+                  : "The stored copy is damaged. Stop managing the mod to remove it from the app."}
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -6,12 +6,12 @@ use std::time::Duration;
 
 use gmm_app::{
     AdoptDetectedRequest, AdoptDetectedResultDto, AdoptPreviewDto, AdoptRequest, App, AppError,
-    AppStatusDto, BaselineDto, Category, ConfirmImportRequest, DashboardDto, DetectedModsDto,
-    DiscoveredInstallationDto, DriftDto, ErrorCode, GuardStatusDto, ImportPreviewDto,
-    InstallationDto, InventoryFilterDto, InventoryPageDto, InventorySummaryDto, ModDetailDto,
-    ModDto, OnlineCheckDto, OperationStatusDto, PlanPreviewDto, ProfileDetailDto, ProfileDto,
-    ProfileEntryInput, ProgressDto, ProgressSink, RegisterInstallationRequest, ScanSummaryDto,
-    ThrottledSink, TransactionPageDto, VanillaStatusDto, VaultReportDto,
+    AppStatusDto, BaselineDto, Category, ConfirmImportRequest, DashboardDto, DeleteModResultDto,
+    DetectedModsDto, DiscoveredInstallationDto, DriftDto, ErrorCode, GuardStatusDto,
+    ImportPreviewDto, InstallationDto, InventoryFilterDto, InventoryPageDto, InventorySummaryDto,
+    ModDetailDto, ModDto, OnlineCheckDto, OperationStatusDto, PlanPreviewDto, ProfileDetailDto,
+    ProfileDto, ProfileEntryInput, ProgressDto, ProgressSink, RegisterInstallationRequest,
+    ScanSummaryDto, ThrottledSink, TransactionPageDto, VanillaStatusDto, VaultReportDto,
     profile_name_suggestions as suggested_profile_names,
 };
 use tauri::{AppHandle, Emitter, State};
@@ -25,7 +25,7 @@ const PROGRESS_EVENT: &str = "gmm://progress";
 const PROGRESS_INTERVAL: Duration = Duration::from_millis(100);
 
 /// Forwards progress to the webview as the `gmm://progress` event.
-struct EventSink(AppHandle);
+pub(crate) struct EventSink(AppHandle);
 
 impl ProgressSink for EventSink {
     fn emit(&self, p: &ProgressDto) {
@@ -35,7 +35,7 @@ impl ProgressSink for EventSink {
     }
 }
 
-fn progress_sink(handle: AppHandle) -> ThrottledSink<EventSink> {
+pub(crate) fn progress_sink(handle: AppHandle) -> ThrottledSink<EventSink> {
     ThrottledSink::new(EventSink(handle), PROGRESS_INTERVAL)
 }
 
@@ -71,10 +71,13 @@ pub async fn discover_installations(
 /// Registers a folder as an installation.
 #[tauri::command]
 pub async fn register_installation(
+    handle: AppHandle,
     state: State<'_, AppState>,
     req: RegisterInstallationRequest,
 ) -> Result<InstallationDto, AppError> {
-    run_blocking(&state, move |app| app.register_installation(req)).await
+    let dto = run_blocking(&state, move |app| app.register_installation(req)).await?;
+    crate::tray::refresh(&handle);
+    Ok(dto)
 }
 
 /// Lists registered installations.
@@ -97,14 +100,17 @@ pub async fn refresh_installation(
 /// Renames an installation.
 #[tauri::command]
 pub async fn rename_installation(
+    handle: AppHandle,
     state: State<'_, AppState>,
     id: String,
     display_name: String,
 ) -> Result<InstallationDto, AppError> {
-    run_blocking(&state, move |app| {
+    let dto = run_blocking(&state, move |app| {
         app.rename_installation(&id, &display_name)
     })
-    .await
+    .await?;
+    crate::tray::refresh(&handle);
+    Ok(dto)
 }
 
 /// Selects the active installation.
@@ -288,6 +294,17 @@ pub async fn update_mod(
         app.update_mod(&mod_id, &name, category, notes)
     })
     .await
+}
+
+/// Deletes a mod: its files leave the game folder and unused vault copies are freed.
+#[tauri::command]
+pub async fn delete_mod(
+    handle: AppHandle,
+    state: State<'_, AppState>,
+    mod_id: String,
+) -> Result<DeleteModResultDto, AppError> {
+    let sink = progress_sink(handle);
+    run_blocking(&state, move |app| app.delete_mod(&mod_id, &sink)).await
 }
 
 /// Ends the management of a mod whose files are in the game folder.

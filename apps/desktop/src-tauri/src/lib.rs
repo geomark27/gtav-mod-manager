@@ -1,11 +1,12 @@
-//! Tauri 2 shell: window, logging, application state and command registration.
+//! Tauri 2 shell: window, tray, logging, application state and command registration.
 
 mod commands;
 mod state;
+mod tray;
 
 use std::sync::Arc;
 
-use gmm_app::{App, AppDirs, AppError, init_logging};
+use gmm_app::{App, AppDirs, AppError, ErrorCode, init_logging};
 use state::AppState;
 
 fn build_state() -> AppState {
@@ -24,7 +25,12 @@ fn build_state() -> AppState {
         Err(_) => None,
     };
     let app = App::init(dirs).map(Arc::new).inspect_err(|e| {
-        tracing::error!(code = ?e.code, message = %e.message, details = ?e.details, "initialization failed");
+        if e.code == ErrorCode::AlreadyRunning {
+            // A second launch: the single-instance plugin shows the running window and exits.
+            tracing::info!("another instance is running");
+        } else {
+            tracing::error!(code = ?e.code, message = %e.message, details = ?e.details, "initialization failed");
+        }
     });
     AppState {
         app,
@@ -35,10 +41,21 @@ fn build_state() -> AppState {
 /// Builds and runs the Tauri application.
 pub fn run() {
     let result = tauri::Builder::default()
+        // First plugin: a second launch focuses the running window (it may be hidden in the
+        // tray) instead of opening another one.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            tray::show_main_window(app);
+        }))
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(build_state())
+        .setup(|app| {
+            tray::create(app.handle())?;
+            Ok(())
+        })
+        .on_window_event(tray::on_window_event)
         .invoke_handler(tauri::generate_handler![
             commands::get_app_status,
             commands::discover_installations,
@@ -64,6 +81,7 @@ pub fn run() {
             commands::set_category_enabled,
             commands::update_mod,
             commands::forget_mod,
+            commands::delete_mod,
             commands::reconcile_installation,
             commands::list_profiles,
             commands::profile_name_suggestions,
