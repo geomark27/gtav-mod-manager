@@ -11,6 +11,10 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 
 ## [Unreleased]
 
+### Changed
+
+- Windows now shows **ModSwitch** everywhere: Start menu, installed apps, install folder and the installer file (`ModSwitch-windows-x64-setup.exe`). Updating from GTA V Mod Manager removes the old entry and its shortcuts; your installations, mods and backups stay where they are. A taskbar pin of the old app has to be pinned again.
+
 ## [0.5.0] - 2026-11-21
 
 ### Added

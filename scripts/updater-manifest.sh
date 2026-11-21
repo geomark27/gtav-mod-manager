@@ -15,7 +15,7 @@ set -euo pipefail
 tag=${1:?usage: scripts/updater-manifest.sh vX.Y.Z <folder-with-the-.sig>}
 sigs=${2:?usage: scripts/updater-manifest.sh vX.Y.Z <folder-with-the-.sig>}
 version=${tag#v}
-installer=GTAV-Mod-Manager-windows-x64-setup.exe
+installer=ModSwitch-windows-x64-setup.exe
 repo=${GH_REPO:-geomark27/gtav-mod-manager}
 dir=$(mktemp -d)
 trap 'rm -rf "$dir"' EXIT

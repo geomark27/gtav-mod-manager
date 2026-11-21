@@ -63,6 +63,24 @@ Copy a small subset that is structurally valid (or use `gmm-testkit`-style fake 
 run, uninstall; the vault and database stay in `%LOCALAPPDATA%\GtavModManager` (by design —
 removing them is a manual decision).
 
+### 5.1 From GTA V Mod Manager to ModSwitch (v0.6.0)
+
+The first ModSwitch installer removes the old *GTA V Mod Manager* install
+(`apps/desktop/src-tauri/windows/hooks.nsh`). Before updating, copy
+`%LOCALAPPDATA%\GtavModManager` somewhere safe (the hook never touches it, the copy is for peace
+of mind).
+
+1. With v0.5.0 installed and in use, accept the update banner (or run the v0.6.0 installer).
+2. The app restarts as **ModSwitch**: window title, tray tooltip and sidebar.
+3. Start menu: **ModSwitch** is there, *GTA V Mod Manager* is gone. If there was a desktop
+   shortcut, it is now *ModSwitch*. A taskbar pin of the old app is gone: pin ModSwitch again.
+4. Settings → Apps → Installed apps: only **ModSwitch** (version 0.6.0).
+5. `%LOCALAPPDATA%\GTA V Mod Manager` no longer exists; `%LOCALAPPDATA%\ModSwitch` holds the
+   program.
+6. Installations, mods, profiles and Settings → Vault are exactly as before.
+7. Run the v0.6.0 installer again: it updates in place (no second entry, no prompt about the old
+   app).
+
 ## 6. Phase 4 — mod recognition (v0.2.0)
 
 **A-08 (read-only, real installation).** In a Windows terminal, from each game root (Legacy
