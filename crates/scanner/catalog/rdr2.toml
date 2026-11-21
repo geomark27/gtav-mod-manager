@@ -1,0 +1,83 @@
+# Red Dead Redemption 2 catalog.
+# Every value is an ASSUMPTION (docs/roadmap.md, A-09 to A-12) until checked against the file
+# list of a real installation.
+edition = "rdr2"
+executable = "RDR2.exe"                       # ASSUMPTION A-09
+required_files = [                            # ASSUMPTION A-11
+    "RDR2.exe",
+    "PlayRDR2.exe",
+]
+steam_app_id = 1174180                        # ASSUMPTION A-10
+rockstar_registry_keys = [                    # ASSUMPTION A-10
+    'SOFTWARE\WOW6432Node\Rockstar Games\Red Dead Redemption 2',
+]
+trusted_publishers = [                        # ASSUMPTION A-06
+    "Rockstar Games, Inc.",
+    "Take-Two Interactive Software, Inc.",
+]
+
+# Original game files. ASSUMPTION A-11: refine with the file list of a real install.
+[originals]
+files = [
+    "RDR2.exe",
+    "PlayRDR2.exe",
+    "bink2w64.dll",
+    "steam_api64.dll",
+]
+globs = ["*.rpf", "x64/**", "Redistributables/**", "_CommonRedist/**"]
+
+# Known mod patterns, first match wins. ASSUMPTION A-12.
+[[mod_patterns]]
+glob = "*.asi"
+category = "scripts_gameplay"
+label = "ASI plugin"
+
+[[mod_patterns]]
+glob = "dinput8.dll"
+category = "scripts_gameplay"
+label = "ASI loader"
+
+[[mod_patterns]]
+glob = "ScriptHookRDR2.dll"
+category = "scripts_gameplay"
+label = "Script Hook RDR2"
+
+[[mod_patterns]]
+glob = "ScriptHookRDR2DotNet*"
+category = "scripts_gameplay"
+label = "Script Hook RDR2 .NET"
+
+[[mod_patterns]]
+glob = "scripts/**"
+category = "scripts_gameplay"
+label = "Scripts folder"
+
+[[mod_patterns]]
+glob = "lml/**"
+category = "uncategorized"
+label = "Lenny's Mod Loader folder"
+
+[[mod_patterns]]
+glob = "ModManager.*"
+category = "uncategorized"
+label = "Lenny's Mod Loader"
+
+[[mod_patterns]]
+glob = "dxgi.dll"
+category = "graphics_textures"
+label = "Graphics injector"
+
+[[mod_patterns]]
+glob = "d3d12.dll"
+category = "graphics_textures"
+label = "Graphics injector"
+
+[[mod_patterns]]
+glob = "reshade-shaders/**"
+category = "graphics_textures"
+label = "ReShade"
+
+[[mod_patterns]]
+glob = "ReShade.ini"
+category = "graphics_textures"
+label = "ReShade"

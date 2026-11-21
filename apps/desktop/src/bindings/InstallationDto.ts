@@ -2,6 +2,7 @@
 import type { BaselineTrust } from "./BaselineTrust";
 import type { DistributionPlatform } from "./DistributionPlatform";
 import type { Edition } from "./Edition";
+import type { Game } from "./Game";
 import type { InstallationStatus } from "./InstallationStatus";
 
 /**
@@ -12,6 +13,10 @@ export type InstallationDto = {
  * Identifier (UUID).
  */
 id: string, 
+/**
+ * Game, derived from the edition.
+ */
+game: Game, 
 /**
  * Game edition.
  */

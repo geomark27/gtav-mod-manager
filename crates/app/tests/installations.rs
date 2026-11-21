@@ -388,6 +388,7 @@ fn dto_json_shape_is_camel_case_with_enum_strings() {
             "displayName",
             "edition",
             "exeVersion",
+            "game",
             "id",
             "platform",
             "rootPath",
@@ -396,6 +397,7 @@ fn dto_json_shape_is_camel_case_with_enum_strings() {
         ]
     );
     assert_eq!(v["edition"], "legacy");
+    assert_eq!(v["game"], "gtav");
     assert_eq!(v["platform"], "unknown");
     assert_eq!(v["status"], "ok");
     assert_eq!(v["baseline"], "none");

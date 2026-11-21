@@ -2,7 +2,7 @@
 //! and grouped. Original files (catalog or trusted signature) never reach a proposal.
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
-use gmm_domain::{Classification, Edition, RelPath};
+use gmm_domain::{Classification, Edition, Game, RelPath};
 use gmm_platform::StdFs;
 use gmm_scanner::testing::FakeOs;
 use gmm_scanner::{
@@ -33,7 +33,7 @@ fn adoptable(o: &ScanOutcome) -> Vec<RelPath> {
 
 #[test]
 fn a_hand_modded_installation_becomes_named_mods_and_groups() {
-    for edition in Edition::ALL {
+    for edition in Game::Gtav.editions() {
         let i = FakeInstall::builder(edition)
             .with_base_files()
             .script_hook()

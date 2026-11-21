@@ -190,7 +190,7 @@ mod tests {
     }
 
     #[test]
-    fn both_editions_have_base_files() -> Result<()> {
+    fn every_edition_has_base_files() -> Result<()> {
         for edition in Edition::ALL {
             let i = FakeInstall::builder(edition).with_base_files().build()?;
             assert_eq!(i.edition(), edition);
@@ -198,7 +198,14 @@ mod tests {
             for f in base_files(edition) {
                 assert!(i.exists(f), "{f}");
             }
-            assert_eq!(i.read("common.rpf")?.len(), 4096);
+            let rpfs: Vec<&&str> = base_files(edition)
+                .iter()
+                .filter(|f| f.ends_with(".rpf"))
+                .collect();
+            assert!(!rpfs.is_empty(), "{edition} has no archive");
+            for rpf in rpfs {
+                assert_eq!(i.read(rpf)?.len(), 4096);
+            }
         }
         Ok(())
     }
