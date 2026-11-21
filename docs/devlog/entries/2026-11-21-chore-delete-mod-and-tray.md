@@ -5,7 +5,7 @@ type: feat
 author: Marcos Ramos Jacome
 agents: claude:orchestrator
 pr: pending
-version: unreleased
+version: v0.5.0
 ---
 
 # Delete a mod, and the tray icon

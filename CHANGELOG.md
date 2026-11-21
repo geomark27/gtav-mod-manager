@@ -11,6 +11,8 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-21
+
 ### Added
 
 - Delete a mod: in the mod's details, **Delete mod** removes its files from the game folder and the app forgets it; its stored copy is freed unless another mod uses the same files. Original game files are never touched. A mod that other mods require must wait until those are deleted.
@@ -63,7 +65,8 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 - Vault maintenance: garbage collection removes the vault copies no mod points to any more.
 - Windows installer and automatic updates: a per-user NSIS installer in English and Spanish that needs no administrator rights, and signed updates downloaded from GitHub releases. The installer has no code-signing certificate, so SmartScreen shows a warning the first time.
 
-[Unreleased]: https://github.com/geomark27/gtav-mod-manager/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/geomark27/gtav-mod-manager/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.1.0...v0.2.0

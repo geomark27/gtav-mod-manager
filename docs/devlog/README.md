@@ -30,6 +30,7 @@ Types (same prefixes as commits): `feat`, `fix`, `chore`, `docs`, `refactor`, `p
 <!-- releases:start -->
 | Version | Date | Type | Entries |
 |---|---|---|---|
+| [v0.5.0](releases/v0.5.0.md) | 2026-11-21 | minor | 1 |
 | [v0.4.0](releases/v0.4.0.md) | 2026-11-21 | minor | 3 |
 | [v0.3.0](releases/v0.3.0.md) | 2026-11-20 | minor | 4 |
 | [v0.2.0](releases/v0.2.0.md) | 2026-11-19 | minor | 8 |
