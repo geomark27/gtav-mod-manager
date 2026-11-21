@@ -1,0 +1,9 @@
+# Script Hook RDR2 (Alexander Blade): native script runtime, game root.
+# ASSUMPTION A-12: verify names on a real Red Dead Redemption 2 install.
+id = "rdr2-script-hook"
+name = "Script Hook RDR2"
+category = "scripts_gameplay"
+editions = ["rdr2"]
+verified = false
+files = ["ScriptHookRDR2.dll"]
+optional = ["ScriptHookRDR2.log"]

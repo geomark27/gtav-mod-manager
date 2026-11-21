@@ -6,7 +6,7 @@
 
 use std::path::{Path, PathBuf};
 
-use gmm_domain::{Installation, InstallationId, InstallationStatus};
+use gmm_domain::{Game, Installation, InstallationId, InstallationStatus};
 use gmm_platform::{Fs, StdFs};
 use gmm_scanner::running_guarded;
 use serde::Serialize;
@@ -116,6 +116,14 @@ fn mib(bytes: u64) -> u64 {
 impl App {
     /// Re-validates the installation folder (persisting the status) and probes every guard.
     fn guard_snapshot(&self, id: InstallationId) -> Result<GuardStatusDto, AppError> {
+        Ok(self.guard_snapshot_with_game(id)?.0)
+    }
+
+    /// [`Self::guard_snapshot`] and the game of the installation.
+    fn guard_snapshot_with_game(
+        &self,
+        id: InstallationId,
+    ) -> Result<(GuardStatusDto, Game), AppError> {
         let inst: Installation = self
             .lock_db()?
             .get_installation(id)?
@@ -132,12 +140,14 @@ impl App {
             self.has_unresolved_transactions(&db, id)?
         };
         let missing = report.status == InstallationStatus::Missing;
-        Ok(GuardStatusDto {
-            game_running: running_guarded(&*self.os),
+        let game = inst.edition.game();
+        let status = GuardStatusDto {
+            game_running: running_guarded(&*self.os, game),
             writable: !missing && write_probe(&inst.root_path),
             recovery_required,
             installation_missing: missing,
-        })
+        };
+        Ok((status, game))
     }
 
     /// True when the installation has a `needs_attention` or an unrecovered transaction.
@@ -168,11 +178,14 @@ impl App {
         id: InstallationId,
         need: GuardNeeds,
     ) -> Result<(), AppError> {
-        let status = self.guard_snapshot(id)?;
+        let (status, game) = self.guard_snapshot_with_game(id)?;
         if !status.game_running.is_empty() {
             return Err(AppError::new(
                 ErrorCode::GameRunning,
-                "GTA V or one of its launchers is running.",
+                format!(
+                    "{} or one of its launchers is running.",
+                    game.display_name()
+                ),
             )
             .with_hint("Close the game and its launchers, then try again.")
             .with_details(status.game_running.join(", ")));

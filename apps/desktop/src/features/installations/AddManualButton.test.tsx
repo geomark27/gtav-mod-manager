@@ -51,7 +51,7 @@ describe("AddManualButton", () => {
     mockIPC(() => {
       throw {
         code: "INVALID_INPUT",
-        message: "This folder is not a complete GTA V installation.",
+        message: "This folder is not a complete GTA V or Red Dead Redemption 2 installation.",
         hint: "Select the game folder.",
         details: null,
       };
@@ -59,7 +59,7 @@ describe("AddManualButton", () => {
     renderWithProviders(<AddManualButton />);
     await userEvent.click(screen.getByRole("button", { name: "Add installation manually" }));
     expect(await screen.findByText("INVALID_INPUT")).toBeInTheDocument();
-    expect(screen.getByText("This folder is not a complete GTA V installation.")).toBeInTheDocument();
+    expect(screen.getByText("This folder is not a complete GTA V or Red Dead Redemption 2 installation.")).toBeInTheDocument();
     expect(screen.getByText("Select the game folder.")).toBeInTheDocument();
   });
 });

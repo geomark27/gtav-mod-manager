@@ -6,7 +6,7 @@ import type { ReadinessCheckDto } from "../../bindings/ReadinessCheckDto";
 import { ONLINE_NOTICE } from "../../layout/AppShell";
 import { renderWithProviders } from "../installations/testing";
 import { APP_ERROR } from "../mods/testing";
-import { describeCheck, verdictText } from "./labels";
+import { checkTitle, describeCheck, verdictText } from "./labels";
 import { OnlineCheckPanel } from "./OnlineCheckPanel";
 
 afterEach(() => clearMocks());
@@ -15,6 +15,7 @@ const pass = (id: ReadinessCheckDto["id"]): ReadinessCheckDto => ({ id, status: 
 
 function makeResult(over: Partial<OnlineCheckDto> = {}): OnlineCheckDto {
   return {
+    game: "gtav",
     checkedAt: "2026-11-19T20:00:00Z",
     scannedAt: "2026-11-19T20:00:00Z",
     verdict: "clear",
@@ -114,13 +115,13 @@ describe("OnlineCheckPanel", () => {
     m.handlers.prepare_for_online = () =>
       makeResult({
         verdict: "blocked",
-        actionError: { ...APP_ERROR, code: "GAME_RUNNING", message: "GTA V or one of its launchers is running." },
+        actionError: { ...APP_ERROR, code: "GAME_RUNNING", message: "Grand Theft Auto V or one of its launchers is running." },
         checks: [{ id: "game_closed", status: "fail", count: 1, items: ["GTA5.exe"] }],
       });
     renderPanel();
     await userEvent.click(screen.getByRole("button", { name: "Prepare for online" }));
     expect(await screen.findByText("The mods were not disabled:")).toBeInTheDocument();
-    expect(screen.getByText("GTA V or one of its launchers is running.")).toBeInTheDocument();
+    expect(screen.getByText("Grand Theft Auto V or one of its launchers is running.")).toBeInTheDocument();
     expect(screen.getByText("Running: GTA5.exe.")).toBeInTheDocument();
   });
 
@@ -150,6 +151,16 @@ describe("labels", () => {
     expect(verdictText(BLOCKED).title).toBe("2 things to fix");
     const review = makeResult({ verdict: "review", checks: [{ id: "leftovers", status: "warn", count: 1, items: ["a"] }] });
     expect(verdictText(review).title).toBe("1 thing to review");
+  });
+
+  it("names the online mode and the game of the installation", () => {
+    const red = makeResult({ game: "rdr2" });
+    expect(verdictText(red).sub).toBe("Based on these checks only. This is not a guarantee for Red Dead Online.");
+    expect(verdictText({ ...BLOCKED, game: "rdr2" }).sub).toBe("Fix these before you open Red Dead Online.");
+    expect(verdictText(makeResult()).sub).toMatch(/GTA Online/);
+    expect(checkTitle("game_closed", "rdr2")).toBe("Red Dead Redemption 2 and its launchers are closed");
+    expect(checkTitle("game_closed", "gtav")).toBe("GTA V and its launchers are closed");
+    expect(checkTitle("recovery", "rdr2")).toBe("No interrupted change is waiting");
   });
 
   it("explains a missing baseline and an untrusted one", () => {
