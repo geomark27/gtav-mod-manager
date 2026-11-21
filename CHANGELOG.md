@@ -11,6 +11,8 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-21
+
 ### Changed
 
 - Windows now shows **ModSwitch** everywhere: Start menu, installed apps, install folder and the installer file (`ModSwitch-windows-x64-setup.exe`). Updating from GTA V Mod Manager removes the old entry and its shortcuts; your installations, mods and backups stay where they are. A taskbar pin of the old app has to be pinned again.
@@ -69,7 +71,8 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 - Vault maintenance: garbage collection removes the vault copies no mod points to any more.
 - Windows installer and automatic updates: a per-user NSIS installer in English and Spanish that needs no administrator rights, and signed updates downloaded from GitHub releases. The installer has no code-signing certificate, so SmartScreen shows a warning the first time.
 
-[Unreleased]: https://github.com/geomark27/gtav-mod-manager/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/geomark27/gtav-mod-manager/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/geomark27/gtav-mod-manager/compare/v0.2.0...v0.3.0

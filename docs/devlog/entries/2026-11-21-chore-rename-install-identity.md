@@ -5,7 +5,7 @@ type: feat
 author: Marcos Ramos Jacome
 agents: claude:orchestrator
 pr: pending
-version: unreleased
+version: v0.6.0
 ---
 
 # Windows install renamed to ModSwitch
