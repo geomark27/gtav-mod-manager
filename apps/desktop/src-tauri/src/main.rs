@@ -1,4 +1,4 @@
-//! Binary entry point of GTA V Mod Manager.
+//! Binary entry point of ModSwitch.
 
 // Prevents an extra console window on Windows in release builds.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]

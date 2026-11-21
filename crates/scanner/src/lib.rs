@@ -1,4 +1,4 @@
-//! Installation discovery and structural validation for GTA V Mod Manager.
+//! Installation discovery and structural validation for ModSwitch.
 //!
 //! Everything OS-specific goes through [`OsProbe`]; everything file-system related goes
 //! through `gmm_platform::Fs`. Validation never modifies an installation except for the
@@ -22,7 +22,9 @@ pub use discovery::{DiscoveredInstallation, DiscoveryHints, discover};
 pub use error::{Error, Result};
 pub use glob::Glob;
 pub use os::{Hive, OsProbe, SystemOs, testing};
-pub use processes::{GUARDED_PROCESSES, running_guarded};
+pub use processes::{
+    GTAV_PROCESSES, RDR2_PROCESSES, ROCKSTAR_PROCESSES, guarded_processes, running_guarded,
+};
 pub use recognize::{
     AmbiguousFile, Confidence, ProposedGroup, Recognition, RecognizedMod, Signature, Signatures,
     group_candidates, recognize,

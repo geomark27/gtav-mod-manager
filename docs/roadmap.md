@@ -237,7 +237,8 @@ goal is a fast, trustworthy switch from story mode with mods to GTA Online witho
 
 ## Phase 6 — Several games: GTA V and Red Dead Redemption 2
 
-Status: **step 1 in progress** on `feature/multi-game` (2026-11-21). Decided with the owner: the
+Status: **steps 1 to 3 done** (2026-11-21: PRs #20, #22 and `feature/multi-game-ui`). Step 4
+waits for the owner's file list of a real RDR2 install. Decided with the owner: the
 same app manages the mods of GTA V and RDR2. The engine (vault, journal, transactions,
 profiles, conflicts, vanilla mode) does not depend on the game; what changes per game is the
 catalog, the processes, discovery, the signatures and the texts.
@@ -255,10 +256,11 @@ catalog, the processes, discovery, the signatures and the texts.
 
 | Step | What | Status |
 | ---- | ---- | ------ |
-| 1 | Domain (`Game`, `Edition::Rdr2`), migration 0004, `rdr2.toml` catalog, signatures scoped to their game, RDR2 processes guarded, `game` in `InstallationDto` | In progress |
-| 2 | Scanner per game: guard per game (today a running RDR2 also blocks GTA V changes, and the other way round), RDR2 signatures (Script Hook RDR2, Lenny's Mod Loader, ASI loader, trainers), online check rules for Red Dead Online | Planned |
-| 3 | UI: installations grouped by game, game shown on every page, texts and app name not tied to GTA V | Planned |
+| 1 | Domain (`Game`, `Edition::Rdr2`), migration 0004, `rdr2.toml` catalog, signatures scoped to their game, RDR2 processes guarded, `game` in `InstallationDto` | Done (PR #20) |
+| 2 | Guard per game (a running game never blocks the other one; the Rockstar launcher and services block both), 6 RDR2 signatures (Script Hook RDR2 and its .NET port, ASI loader, Native Trainer, Lenny's Mod Loader, ReShade), `lml/<Mod>/` grouped as one mod, online check per game (`OnlineCheckDto.game`, "Red Dead Online" in the UI) | Done (PR #22) |
+| 3 | UI: installations grouped by game (Installations page and sidebar selector), active game under the selector on every page, texts not tied to GTA V, app renamed **ModSwitch** (window, sidebar, messages, release titles, README) | Done |
 | 4 | Validation on a real RDR2 install (file list from the owner) to close A-09 to A-12 | Planned |
+| 5 | Install identity: Tauri `productName` (Start menu, install folder, uninstall entry), the installer file name and the repository still say GTA V Mod Manager. Renaming `productName` makes the NSIS installer install next to the old one instead of updating it, so it needs an installer hook that removes the old install, tested on Windows. The data folder (`GtavModManager`) and the identifier never change: the vault lives there. | Planned |
 
 ---
 

@@ -1,11 +1,15 @@
-# GTA V Mod Manager
+# ModSwitch
 
 Windows desktop app to detect, inventory and safely enable/disable **story-mode** mods for
-GTA V **Legacy** and **Enhanced** — without ever modifying original game files. Every change is
-journaled, verified with SHA-256 and reversible, even after a crash.
+**GTA V** (Legacy and Enhanced) and **Red Dead Redemption 2** — without ever modifying original
+game files. Every change is journaled, verified with SHA-256 and reversible, even after a crash.
+
+ModSwitch was called *GTA V Mod Manager* until Red Dead Redemption 2 support. The repository,
+the installer file name, the Windows install name and the data folder keep the old name, so
+that updates and existing data keep working.
 
 > Mods managed here are for story mode. Disabling mods does not make an installation safe for
-> GTA Online.
+> GTA Online or Red Dead Online.
 
 ## Stack
 

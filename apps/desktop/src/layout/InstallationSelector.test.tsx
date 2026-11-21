@@ -34,4 +34,23 @@ describe("InstallationSelector", () => {
     await userEvent.selectOptions(select, b.id);
     await waitFor(() => expect(calls).toContainEqual(["select_installation", { id: b.id }]));
   });
+
+  it("groups the options by game and names the active game", async () => {
+    const gta = makeInstallation();
+    const red = makeInstallation({
+      id: "0192f0e8-0000-7000-8000-000000000003",
+      game: "rdr2",
+      edition: "rdr2",
+      displayName: "My RDR2",
+    });
+    mockIPC((cmd) => {
+      if (cmd === "list_installations") return [gta, red];
+      if (cmd === "get_selected_installation") return red;
+      return undefined;
+    });
+    renderWithProviders(<InstallationSelector />);
+    expect(await screen.findByRole("group", { name: "Red Dead Redemption 2" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "GTA V" })).toBeInTheDocument();
+    expect(await screen.findByLabelText("Active game")).toHaveTextContent("Red Dead Redemption 2");
+  });
 });

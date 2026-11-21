@@ -1,3 +1,4 @@
+import { GAME_NAME, groupByGame } from "../features/games/games";
 import { AddManualButton } from "../features/installations/AddManualButton";
 import { DiscoverPanel } from "../features/installations/DiscoverPanel";
 import { InstallationCard } from "../features/installations/InstallationCard";
@@ -24,11 +25,16 @@ export function InstallationsPage() {
         {installations.data?.length === 0 ? (
           <p className={styles.muted}>No installation registered yet.</p>
         ) : null}
-        <div className={installStyles.list}>
-          {installations.data?.map((i) => (
-            <InstallationCard key={i.id} installation={i} isActive={selected.data?.id === i.id} />
-          ))}
-        </div>
+        {groupByGame(installations.data ?? []).map(({ game, items }) => (
+          <section key={game} aria-label={GAME_NAME[game]} className={installStyles.gameGroup}>
+            <h2 className={installStyles.gameTitle}>{GAME_NAME[game]}</h2>
+            <div className={installStyles.list}>
+              {items.map((i) => (
+                <InstallationCard key={i.id} installation={i} isActive={selected.data?.id === i.id} />
+              ))}
+            </div>
+          </section>
+        ))}
       </section>
     </div>
   );

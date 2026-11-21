@@ -49,7 +49,7 @@ describe("AppShell", () => {
     const note = screen.getByRole("note");
     expect(note).toHaveTextContent(ONLINE_NOTICE);
     expect(ONLINE_NOTICE).toBe(
-      "Mods managed here are for story mode. Disabling mods does not make an installation safe for GTA Online.",
+      "Mods managed here are for story mode. Disabling mods does not make an installation safe for GTA Online or Red Dead Online.",
     );
   });
 

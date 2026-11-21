@@ -1,0 +1,9 @@
+# ReShade for Red Dead Redemption 2 (DXGI or D3D12 proxy). ASSUMPTION A-12.
+id = "rdr2-reshade"
+name = "ReShade"
+category = "graphics_textures"
+editions = ["rdr2"]
+verified = false
+files = ["ReShade.ini"]
+any_of = [["dxgi.dll", "d3d12.dll"]]
+optional = ["ReShade.log", "ReShadePreset.ini", "reshade-shaders/**", "reshade-presets/**"]

@@ -1,4 +1,4 @@
-//! OS abstractions for GTA V Mod Manager: the `Fs` trait, its real and fault-injecting
+//! OS abstractions for ModSwitch: the `Fs` trait, its real and fault-injecting
 //! implementations, streaming hashing and application directories.
 
 pub mod dirs;

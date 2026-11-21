@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "GTA V Mod Manager",
+        "title": "ModSwitch",
         "width": 1280,
         "height": 800,
         "minWidth": 1024,
@@ -28,8 +28,8 @@
     "active": true,
     "targets": ["nsis"],
     "publisher": "Kaelence",
-    "shortDescription": "Safe mod manager for GTA V Legacy and Enhanced (story mode)",
-    "longDescription": "GTA V Mod Manager inventories and toggles story-mode mods for GTA V Legacy and Enhanced without ever touching original game files: every change is journaled, verified and reversible. Mods managed here are for story mode only; disabling mods does not make an installation safe for GTA Online.",
+    "shortDescription": "ModSwitch: safe mod manager for GTA V and Red Dead Redemption 2 (story mode)",
+    "longDescription": "ModSwitch inventories and toggles story-mode mods for GTA V (Legacy and Enhanced) and Red Dead Redemption 2 without ever touching original game files: every change is journaled, verified and reversible. Mods managed here are for story mode only; disabling mods does not make an installation safe for GTA Online or Red Dead Online.",
     "category": "Utility",
     "copyright": "© 2026 Kaelence",
     "icon": [

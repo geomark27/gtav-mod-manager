@@ -1,7 +1,7 @@
 //! Grouping heuristics for candidate files no signature recognized (Phase 4 R2).
 //!
 //! Files are grouped under a few base folders (`""` = the game root, `scripts`, `plugins`,
-//! `mods`):
+//! `mods`, and `lml` for Red Dead Redemption 2's Lenny's Mod Loader):
 //! - a file inside a first-level folder of the base belongs to that folder's group
 //!   (`scripts/Foo/a.dll` → "Foo");
 //! - a file directly in the base belongs to the group of its stem, which also takes a folder
@@ -18,7 +18,7 @@ use super::matcher::Confidence;
 use crate::catalog::Catalog;
 
 /// Base folders whose first-level entries are grouped. (`update/**` is original: never grouped.)
-const BASES: [&str; 3] = ["scripts", "plugins", "mods"];
+const BASES: [&str; 4] = ["scripts", "plugins", "mods", "lml"];
 
 /// A proposed mod made of related unrecognized files.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -195,6 +195,37 @@ mod tests {
             ]
         );
         assert!(g.iter().all(|x| x.confidence == Confidence::Low));
+    }
+
+    #[test]
+    fn each_lennys_mod_loader_folder_is_one_group() {
+        let catalogs = Catalogs::load().unwrap();
+        let files: Vec<RelPath> = [
+            "lml/BetterHorses/install.xml",
+            "lml/BetterHorses/stream/horse.ymt",
+            "lml/dark_nights/install.xml",
+        ]
+        .iter()
+        .map(|f| RelPath::parse(f).unwrap())
+        .collect();
+        let g = group_candidates(catalogs.get(Edition::Rdr2), &files);
+        assert_eq!(
+            summary(&g),
+            [
+                (
+                    "BetterHorses".to_owned(),
+                    s(&[
+                        "lml/BetterHorses/install.xml",
+                        "lml/BetterHorses/stream/horse.ymt"
+                    ])
+                ),
+                (
+                    "Dark Nights".to_owned(),
+                    s(&["lml/dark_nights/install.xml"])
+                ),
+            ]
+        );
+        assert!(g.iter().all(|x| x.category == Category::Uncategorized));
     }
 
     #[test]

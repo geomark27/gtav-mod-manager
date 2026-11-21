@@ -18,9 +18,9 @@ pub enum ValidationProblem {
     RootNotFound,
     /// The root exists but is not a directory.
     NotADirectory,
-    /// Neither edition executable is present.
+    /// No edition executable is present.
     NoExecutable,
-    /// Both edition executables are present.
+    /// Executables of several editions (or games) are present.
     AmbiguousEdition,
     /// Some catalog files are missing; see [`ValidationReport::missing`].
     MissingRequiredFiles,

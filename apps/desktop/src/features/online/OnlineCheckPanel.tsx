@@ -8,7 +8,7 @@ import { formatDateTime } from "../../lib/format";
 import { ONLINE_NOTICE } from "../../layout/AppShell";
 import { ErrorMessage } from "../installations/ErrorMessage";
 import styles from "./Online.module.css";
-import { CHECK_TITLE, STATUS_LABEL, STATUS_TONE, describeCheck, verdictText } from "./labels";
+import { STATUS_LABEL, STATUS_TONE, checkTitle, describeCheck, verdictText } from "./labels";
 import { useCheckOnline, usePrepareOnline } from "./useOnline";
 
 export interface OnlineCheckPanelProps {
@@ -98,9 +98,9 @@ function CheckRow({ check: c, result }: { check: ReadinessCheckDto; result: Onli
   const d = describeCheck(c, result);
   const more = c.count - c.items.length;
   return (
-    <li className={styles.check} aria-label={CHECK_TITLE[c.id]}>
+    <li className={styles.check} aria-label={checkTitle(c.id, result.game)}>
       <div className={styles.checkHead}>
-        <span>{CHECK_TITLE[c.id]}</span>
+        <span>{checkTitle(c.id, result.game)}</span>
         <Badge tone={STATUS_TONE[c.status]}>{STATUS_LABEL[c.status]}</Badge>
       </div>
       <span className={styles.muted}>{d.detail}</span>

@@ -2,7 +2,9 @@ import type { BadgeTone } from "../../components/Badge";
 import type { CheckStatus } from "../../bindings/CheckStatus";
 import type { OnlineCheckDto } from "../../bindings/OnlineCheckDto";
 import type { ReadinessCheckDto } from "../../bindings/ReadinessCheckDto";
+import type { Game } from "../../bindings/Game";
 import type { ReadinessCheckId } from "../../bindings/ReadinessCheckId";
+import { GAME_SHORT, ONLINE_NAME } from "../games/games";
 
 export const STATUS_TONE: Record<CheckStatus, BadgeTone> = {
   pass: "success",
@@ -17,8 +19,11 @@ export const STATUS_LABEL: Record<CheckStatus, string> = {
 };
 
 /** Name of each check, as a statement of what is checked. */
-export const CHECK_TITLE: Record<ReadinessCheckId, string> = {
-  game_closed: "GTA V and its launchers are closed",
+export function checkTitle(id: ReadinessCheckId, game: Game): string {
+  return id === "game_closed" ? `${GAME_SHORT[game]} and its launchers are closed` : CHECK_TITLE[id];
+}
+
+const CHECK_TITLE: Record<Exclude<ReadinessCheckId, "game_closed">, string> = {
   recovery: "No interrupted change is waiting",
   managed_mods: "No managed mod is in the game folder",
   mod_files: "No other mod files in the game folder",
@@ -109,7 +114,7 @@ export function verdictText(result: OnlineCheckDto): { title: string; sub: strin
     case "clear":
       return {
         title: "No mod files found",
-        sub: "Based on these checks only. This is not a guarantee for GTA Online.",
+        sub: `Based on these checks only. This is not a guarantee for ${ONLINE_NAME[result.game]}.`,
         tone: "success",
       };
     case "review":
@@ -121,7 +126,7 @@ export function verdictText(result: OnlineCheckDto): { title: string; sub: strin
     case "blocked":
       return {
         title: fails === 1 ? "1 thing to fix" : `${fails} things to fix`,
-        sub: "Fix these before you open GTA Online.",
+        sub: `Fix these before you open ${ONLINE_NAME[result.game]}.`,
         tone: "danger",
       };
   }

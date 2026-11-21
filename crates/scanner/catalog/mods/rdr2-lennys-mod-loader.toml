@@ -1,0 +1,11 @@
+# Lenny's Mod Loader (LML): loads replacement and streamed assets from the lml folder.
+# The mods inside lml/<Mod>/ are separate mods (grouped by folder), not part of the loader.
+# ASSUMPTION A-12.
+id = "rdr2-lennys-mod-loader"
+name = "Lenny's Mod Loader"
+category = "uncategorized"
+editions = ["rdr2"]
+requires = ["rdr2-asi-loader"]
+verified = false
+files = ["vfs.asi"]
+optional = ["ModManager.*", "vfs.log", "lml/*.xml", "lml/*.log", "lml/*.ini"]

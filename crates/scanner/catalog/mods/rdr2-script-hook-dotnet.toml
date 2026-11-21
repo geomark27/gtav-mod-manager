@@ -1,0 +1,15 @@
+# Script Hook RDR2 .NET (community port): runs .NET scripts from the scripts folder.
+# ASSUMPTION A-12.
+id = "rdr2-script-hook-dotnet"
+name = "Script Hook RDR2 .NET"
+category = "scripts_gameplay"
+editions = ["rdr2"]
+requires = ["rdr2-script-hook", "rdr2-asi-loader"]
+verified = false
+files = ["ScriptHookRDR2DotNet.asi"]
+optional = [
+    "ScriptHookRDR2DotNet*.dll",
+    "ScriptHookRDR2DotNet*.ini",
+    "ScriptHookRDR2DotNet*.xml",
+    "ScriptHookRDR2DotNet*.log",
+]

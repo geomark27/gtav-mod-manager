@@ -1,0 +1,8 @@
+# Native Trainer shipped with Script Hook RDR2. ASSUMPTION A-12.
+id = "rdr2-native-trainer"
+name = "Native Trainer"
+category = "scripts_gameplay"
+editions = ["rdr2"]
+requires = ["rdr2-script-hook", "rdr2-asi-loader"]
+verified = false
+files = ["NativeTrainer.asi"]

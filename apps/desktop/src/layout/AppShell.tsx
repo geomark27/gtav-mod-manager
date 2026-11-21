@@ -9,6 +9,7 @@ import {
   ShieldQuestion,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router";
+import { APP_NAME, ONLINE_NOTICE } from "../features/games/games";
 import { UpdateBanner } from "../features/updates/UpdateBanner";
 import { UpdatesProvider } from "../features/updates/useUpdater";
 import styles from "./AppShell.module.css";
@@ -30,9 +31,7 @@ const NAV_ITEMS: readonly NavItem[] = [
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 
-/** Persistent story-mode notice (architecture §12). */
-export const ONLINE_NOTICE =
-  "Mods managed here are for story mode. Disabling mods does not make an installation safe for GTA Online.";
+export { ONLINE_NOTICE } from "../features/games/games";
 
 /** Application layout: fixed sidebar, routed content and the persistent notice. */
 export function AppShell() {
@@ -40,7 +39,10 @@ export function AppShell() {
     <UpdatesProvider>
       <div className={styles.shell}>
         <aside className={styles.sidebar}>
-          <div className={styles.brand}>GTA V Mod Manager</div>
+          <div className={styles.brand}>
+            {APP_NAME}
+            <span className={styles.brandSub}>GTA V · Red Dead Redemption 2</span>
+          </div>
           <InstallationSelector />
           <nav aria-label="Main">
             <ul className={styles.navList}>

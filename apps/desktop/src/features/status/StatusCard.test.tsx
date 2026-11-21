@@ -42,15 +42,15 @@ describe("StatusCard", () => {
     mockIPC(() => {
       throw {
         code: "ALREADY_RUNNING",
-        message: "GTA V Mod Manager is already running.",
-        hint: "Close the other window of GTA V Mod Manager.",
+        message: "ModSwitch is already running.",
+        hint: "Close the other window of ModSwitch.",
         details: null,
       };
     });
     renderCard();
     expect(await screen.findByText("ALREADY_RUNNING")).toBeInTheDocument();
-    expect(screen.getByText("GTA V Mod Manager is already running.")).toBeInTheDocument();
-    expect(screen.getByText("Close the other window of GTA V Mod Manager.")).toBeInTheDocument();
+    expect(screen.getByText("ModSwitch is already running.")).toBeInTheDocument();
+    expect(screen.getByText("Close the other window of ModSwitch.")).toBeInTheDocument();
   });
 
   it("shows INTERNAL for a non-AppError rejection", async () => {

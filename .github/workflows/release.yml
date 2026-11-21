@@ -55,7 +55,7 @@ jobs:
         run: |
           gh release view "$TAG" >/dev/null 2>&1 && exit 0
           bash scripts/changelog-notes.sh "${TAG#v}" | gh release create "$TAG" --draft --verify-tag \
-            --title "GTA V Mod Manager $TAG" --notes-file -
+            --title "ModSwitch $TAG" --notes-file -
 
   build:
     name: Installer (Windows)
