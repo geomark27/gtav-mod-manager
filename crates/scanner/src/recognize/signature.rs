@@ -8,7 +8,7 @@
 use std::collections::HashSet;
 use std::str::FromStr;
 
-use gmm_domain::{Category, Edition, RelPath};
+use gmm_domain::{Category, Edition, Game, RelPath};
 use serde::Deserialize;
 
 use crate::catalog::Catalogs;
@@ -61,7 +61,7 @@ pub struct Signature {
     pub name: String,
     /// Suggested category.
     pub category: Category,
-    /// Editions the mod supports.
+    /// Editions the mod supports, all of the same game.
     pub editions: Vec<Edition>,
     /// Ids of the signatures this mod needs.
     pub requires: Vec<String>,
@@ -76,6 +76,11 @@ pub struct Signature {
 }
 
 impl Signature {
+    /// True when the mod is made for `game` (any of its editions).
+    pub fn is_for_game(&self, game: Game) -> bool {
+        self.editions.iter().any(|e| e.game() == game)
+    }
+
     /// Number of required constraints (`files` patterns plus `any_of` groups).
     pub fn required_count(&self) -> usize {
         self.files.len() + self.any_of.len()
@@ -135,6 +140,16 @@ impl Signature {
         if raw.requires.iter().any(|r| r == &raw.id) {
             return Err(bad("a signature cannot require itself".into()));
         }
+        let editions: Vec<Edition> = raw
+            .editions
+            .iter()
+            .map(|e| Edition::from_str(e).map_err(Error::from))
+            .collect::<Result<_>>()?;
+        if let Some(first) = editions.first()
+            && editions.iter().any(|e| e.game() != first.game())
+        {
+            return Err(bad("editions belong to more than one game".into()));
+        }
         let globs = |list: &[String]| {
             list.iter()
                 .map(|g| Glob::new(g))
@@ -142,11 +157,7 @@ impl Signature {
         };
         Ok(Self {
             category: Category::from_str(&raw.category)?,
-            editions: raw
-                .editions
-                .iter()
-                .map(|e| Edition::from_str(e).map_err(Error::from))
-                .collect::<Result<_>>()?,
+            editions,
             files: globs(&raw.files)?,
             any_of: raw.any_of.iter().map(|g| globs(g)).collect::<Result<_>>()?,
             optional: globs(&raw.optional)?,
@@ -199,7 +210,10 @@ impl Signatures {
                     sig.id
                 )));
             }
-            for catalog in catalogs.iter() {
+            for catalog in catalogs
+                .iter()
+                .filter(|c| sig.is_for_game(c.edition.game()))
+            {
                 for original in &catalog.original_files {
                     if let Some(g) = sig.all_patterns().find(|g| g.matches(original)) {
                         return Err(Error::Catalog(format!(
@@ -296,6 +310,10 @@ mod tests {
             OK.replace("name = \" X Mod \"", "name = \"  \""),
             OK.replace("editions = [\"legacy\"]", "editions = []"),
             OK.replace("editions = [\"legacy\"]", "editions = [\"gold\"]"),
+            OK.replace(
+                "editions = [\"legacy\"]",
+                "editions = [\"legacy\", \"rdr2\"]",
+            ),
             OK.replace("category = \"vehicles\"", "category = \"cars\""),
             OK.replace("files = [\"x.asi\"]", "files = []")
                 .replace("any_of = [[\"a.dll\", \"b.dll\"]]", ""),

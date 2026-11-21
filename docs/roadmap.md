@@ -235,6 +235,33 @@ goal is a fast, trustworthy switch from story mode with mods to GTA Online witho
 
 ---
 
+## Phase 6 — Several games: GTA V and Red Dead Redemption 2
+
+Status: **step 1 in progress** on `feature/multi-game` (2026-11-21). Decided with the owner: the
+same app manages the mods of GTA V and RDR2. The engine (vault, journal, transactions,
+profiles, conflicts, vanilla mode) does not depend on the game; what changes per game is the
+catalog, the processes, discovery, the signatures and the texts.
+
+### Model
+
+- `Game` (`gtav`, `rdr2`) sits above `Edition`. Each edition belongs to exactly one game
+  (`Edition::game`): Legacy and Enhanced are GTA V, `rdr2` is the only RDR2 edition. The game
+  is derived, not stored, so the database cannot hold a contradiction.
+- Migration 0004 rebuilds `installations` so that its `CHECK` accepts `rdr2`. It runs with
+  foreign keys off (dropping the old table would otherwise cascade-delete every scan, mod and
+  profile) and is rolled back if `PRAGMA foreign_key_check` finds anything.
+
+### Steps
+
+| Step | What | Status |
+| ---- | ---- | ------ |
+| 1 | Domain (`Game`, `Edition::Rdr2`), migration 0004, `rdr2.toml` catalog, signatures scoped to their game, RDR2 processes guarded, `game` in `InstallationDto` | In progress |
+| 2 | Scanner per game: guard per game (today a running RDR2 also blocks GTA V changes, and the other way round), RDR2 signatures (Script Hook RDR2, Lenny's Mod Loader, ASI loader, trainers), online check rules for Red Dead Online | Planned |
+| 3 | UI: installations grouped by game, game shown on every page, texts and app name not tied to GTA V | Planned |
+| 4 | Validation on a real RDR2 install (file list from the owner) to close A-09 to A-12 | Planned |
+
+---
+
 ## Assumptions to verify (closed in M7 at the latest)
 
 | ID   | Assumption                                                                        | Needed by |
@@ -247,3 +274,7 @@ goal is a fast, trustworthy switch from story mode with mods to GTA Online witho
 | A-06 | Trusted publisher subjects for Authenticode (Rockstar and shipped runtimes). Only embedded signatures are read (catalog-signed files return none). | M3 / M7   |
 | A-07 | Process names of the game, launchers and Rockstar services.                      | M4 / M7   |
 | A-08 | Real file names and paths of the mods in the Phase 4 signature catalog (Rampage Trainer, Script Hook V, SHVDN, ASI Loader, Menyoo, …) for Legacy and Enhanced. | Phase 4 R1 |
+| A-09 | RDR2 executable name: `RDR2.exe`.                                                 | Phase 6   |
+| A-10 | RDR2 Steam app id `1174180`, Rockstar registry key `…\Rockstar Games\Red Dead Redemption 2`, processes `RDR2.exe` and `PlayRDR2.exe`. | Phase 6   |
+| A-11 | RDR2 required and original files (`RDR2.exe`, `PlayRDR2.exe`, `*.rpf`, `x64/**`).   | Phase 6   |
+| A-12 | RDR2 mod patterns: `ScriptHookRDR2.dll`, `ScriptHookRDR2DotNet*`, `lml/**`, `ModManager.*` (Lenny's Mod Loader), ASI loader, ReShade. | Phase 6   |

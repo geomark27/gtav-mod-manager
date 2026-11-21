@@ -47,11 +47,15 @@ pub const ENHANCED_BASE_FILES: &[&str] = &[
     "bink2w64.dll",
 ];
 
+/// Base files of a structurally valid Red Dead Redemption 2 installation. ASSUMPTION A-11.
+pub const RDR2_BASE_FILES: &[&str] = &["RDR2.exe", "PlayRDR2.exe", "common_0.rpf", "bink2w64.dll"];
+
 /// Base files of the given edition.
 pub fn base_files(edition: Edition) -> &'static [&'static str] {
     match edition {
         Edition::Legacy => LEGACY_BASE_FILES,
         Edition::Enhanced => ENHANCED_BASE_FILES,
+        Edition::Rdr2 => RDR2_BASE_FILES,
     }
 }
 
@@ -85,5 +89,6 @@ mod tests {
     fn base_file_lists() {
         assert_eq!(base_files(Edition::Legacy), LEGACY_BASE_FILES);
         assert_eq!(base_files(Edition::Enhanced), ENHANCED_BASE_FILES);
+        assert_eq!(base_files(Edition::Rdr2), RDR2_BASE_FILES);
     }
 }

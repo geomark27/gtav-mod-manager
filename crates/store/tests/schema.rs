@@ -48,8 +48,8 @@ fn count(c: &Connection, table: &str) -> i64 {
 #[test]
 fn fresh_database_has_version_and_tables() {
     let (_d, path, db) = fresh();
-    assert_eq!(db.schema_version().expect("v"), 3);
-    assert_eq!(LATEST_SCHEMA_VERSION, 3);
+    assert_eq!(db.schema_version().expect("v"), 4);
+    assert_eq!(LATEST_SCHEMA_VERSION, 4);
     let c = raw(&path);
     let mut stmt = c
         .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
@@ -94,7 +94,7 @@ fn reopen_is_idempotent_and_preserves_data() {
     insert_installation(&raw(&path));
     drop(db);
     let db = Database::open(&path).expect("reopen");
-    assert_eq!(db.schema_version().expect("v"), 3);
+    assert_eq!(db.schema_version().expect("v"), 4);
     assert_eq!(count(&raw(&path), "installations"), 1);
 }
 
@@ -108,7 +108,7 @@ fn newer_schema_is_rejected() {
     match Database::open(&path) {
         Err(Error::SchemaTooNew {
             found: 99,
-            supported: 3,
+            supported: 4,
         }) => {}
         other => panic!("unexpected: {other:?}"),
     }
@@ -204,7 +204,7 @@ fn delete_installation_with_transaction_is_restricted() {
 #[test]
 fn in_memory_reaches_latest_version() {
     let db = Database::open_in_memory().expect("open");
-    assert_eq!(db.schema_version().expect("v"), 3);
+    assert_eq!(db.schema_version().expect("v"), 4);
     assert!(db.pragma_snapshot().expect("snap").foreign_keys);
 }
 
@@ -222,7 +222,7 @@ fn migration_from_v1_preserves_data_and_adds_dependencies() {
         insert_mod(&c);
     }
     let db = Database::open(&path).expect("migrate");
-    assert_eq!(db.schema_version().expect("v"), 3);
+    assert_eq!(db.schema_version().expect("v"), 4);
     let c = raw(&path);
     assert_eq!(count(&c, "installations"), 1);
     assert_eq!(count(&c, "mods"), 1);
@@ -254,7 +254,7 @@ fn migration_from_v2_backfills_provenance_and_profile_kind() {
         .expect("profile");
     }
     let db = Database::open(&path).expect("migrate");
-    assert_eq!(db.schema_version().expect("v"), 3);
+    assert_eq!(db.schema_version().expect("v"), 4);
     let c = raw(&path);
     let (kind, detail): (String, Option<String>) = c
         .query_row("SELECT source_kind, source_detail FROM mods", [], |r| {
@@ -285,5 +285,88 @@ fn migration_from_v2_backfills_provenance_and_profile_kind() {
     assert!(
         second.is_err(),
         "a second restore point must violate the index"
+    );
+}
+
+#[test]
+fn migration_from_v3_rebuilds_installations_without_losing_children() {
+    let dir = TempDir::new().expect("tempdir");
+    let path = dir.path().join("gmm.sqlite3");
+    {
+        let c = raw(&path);
+        c.execute_batch(include_str!("../migrations/0001_initial.sql"))
+            .expect("v1 schema");
+        c.execute_batch(include_str!("../migrations/0002_dependencies.sql"))
+            .expect("v2 schema");
+        c.execute_batch(include_str!(
+            "../migrations/0003_provenance_restore_point.sql"
+        ))
+        .expect("v3 schema");
+        c.execute_batch("PRAGMA user_version = 3;")
+            .expect("version");
+        insert_installation(&c);
+        insert_mod(&c);
+        c.execute_batch(&format!(
+            "INSERT INTO profiles (id, installation_id, name, created_at, updated_at)
+             VALUES ('00000000-0000-7000-8000-000000000010', {INST}, 'P', {TS}, {TS});
+             INSERT INTO transactions (id, installation_id, kind, status, created_at)
+             VALUES ({TX}, {INST}, 'enable', 'open', {TS});"
+        ))
+        .expect("children");
+    }
+    let db = Database::open(&path).expect("migrate");
+    assert_eq!(db.schema_version().expect("v"), 4);
+    assert!(db.pragma_snapshot().expect("snap").foreign_keys);
+    drop(db);
+
+    let c = raw(&path);
+    for table in ["installations", "mods", "profiles", "transactions"] {
+        assert_eq!(count(&c, table), 1, "{table}");
+    }
+    let (edition, name): (String, String) = c
+        .query_row("SELECT edition, display_name FROM installations", [], |r| {
+            Ok((r.get(0)?, r.get(1)?))
+        })
+        .expect("installation");
+    assert_eq!((edition.as_str(), name.as_str()), ("legacy", "Test"));
+    let leftovers: i64 = c
+        .query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE sql LIKE '%installations_v4%'",
+            [],
+            |r| r.get(0),
+        )
+        .expect("schema");
+    assert_eq!(leftovers, 0, "no reference to the temporary table survives");
+
+    // The new edition is accepted, anything else still violates the CHECK.
+    c.execute_batch(&format!(
+        "INSERT INTO installations (id, edition, platform, display_name, root_path, root_key, status, created_at, updated_at)
+         VALUES ('00000000-0000-7000-8000-000000000020', 'rdr2', 'steam', 'RDR2', 'Y', 'y', 'ok', {TS}, {TS});"
+    ))
+    .expect("rdr2 installation");
+    let bogus = c.execute_batch(&format!(
+        "INSERT INTO installations (id, edition, platform, display_name, root_path, root_key, status, created_at, updated_at)
+         VALUES ('00000000-0000-7000-8000-000000000021', 'gold', 'steam', 'G', 'Z', 'z', 'ok', {TS}, {TS});"
+    ));
+    assert!(bogus.is_err(), "unknown edition must violate the CHECK");
+
+    // Foreign keys still point at the rebuilt table: RESTRICT from transactions, CASCADE to mods.
+    assert!(
+        c.execute_batch(&format!("DELETE FROM installations WHERE id = {INST};"))
+            .is_err()
+    );
+    c.execute_batch(&format!(
+        "DELETE FROM transactions; DELETE FROM installations WHERE id = {INST};"
+    ))
+    .expect("delete");
+    assert_eq!(count(&c, "mods"), 0);
+    assert_eq!(count(&c, "profiles"), 0);
+    let orphan = c.execute_batch(&format!(
+        "INSERT INTO mods (id, installation_id, name, category, state, created_at, updated_at)
+         VALUES ({MOD}, {INST}, 'M', 'vehicles', 'disabled', {TS}, {TS});"
+    ));
+    assert!(
+        orphan.is_err(),
+        "a mod of a missing installation must violate the FK"
     );
 }
