@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Set the version of GTA V Mod Manager (it never commits). On main it is run by `make release
+# Set the version of ModSwitch (it never commits). On main it is run by `make release
 # bump=…`, which commits and publishes; `make bump` alone works on work branches:
 #   - writes the version to the root Cargo.toml ([workspace.package]), tauri.conf.json,
 #     package.json, the two root fields of package-lock.json and the gmm-* entries of Cargo.lock;

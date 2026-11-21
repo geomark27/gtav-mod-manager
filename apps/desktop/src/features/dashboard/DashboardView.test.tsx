@@ -71,7 +71,7 @@ describe("DashboardView", () => {
       makeDashboard({ guard: { ...OK_GUARD, gameRunning: ["GTA5.exe"] } }),
     );
     renderWithProviders(<DashboardView installationId="i" />);
-    expect(await screen.findByText(/GTA V or a launcher is running/)).toBeInTheDocument();
+    expect(await screen.findByText(/The game or a launcher is running/)).toBeInTheDocument();
   });
 
   it("handles no scan, no baseline and no activity", async () => {

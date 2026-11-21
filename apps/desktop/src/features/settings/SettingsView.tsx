@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Badge } from "../../components/Badge";
 import { Card } from "../../components/Card";
 import { formatDateTime } from "../../lib/format";
+import { ONLINE_NOTICE } from "../games/games";
 import { ErrorMessage } from "../installations/ErrorMessage";
 import { UpdatesCard } from "../updates/UpdatesCard";
 import { VaultCard } from "../vault/VaultCard";
@@ -9,8 +10,7 @@ import { useAppStatus } from "../status/useAppStatus";
 import styles from "./Settings.module.css";
 
 /** Shown on Settings; the same rule the sidebar note states. */
-export const STORY_MODE_NOTICE =
-  "Mods managed here are for story mode. Disabling mods does not make an installation safe for GTA Online.";
+export const STORY_MODE_NOTICE = ONLINE_NOTICE;
 
 function Row({ label, mono = false, children }: { label: string; mono?: boolean; children: ReactNode }) {
   return (

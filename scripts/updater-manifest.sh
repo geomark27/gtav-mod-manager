@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build latest.json, the manifest the updater of GTA V Mod Manager reads, from the .sig file the
+# Build latest.json, the manifest the updater of ModSwitch reads, from the .sig file the
 # Windows build leaves next to the installer (fixed asset name), and upload it to the release.
 # CI runs it after building. It needs gh with GH_REPO and GH_TOKEN, plus jq (or python3).
 #

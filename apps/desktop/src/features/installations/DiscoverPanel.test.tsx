@@ -74,6 +74,6 @@ describe("DiscoverPanel", () => {
     mockIPC(() => []);
     renderWithProviders(<DiscoverPanel />);
     await userEvent.click(screen.getByRole("button", { name: "Detect installations" }));
-    expect(await screen.findByText("No GTA V installations were detected.")).toBeInTheDocument();
+    expect(await screen.findByText("No GTA V or Red Dead Redemption 2 installations were detected.")).toBeInTheDocument();
   });
 });

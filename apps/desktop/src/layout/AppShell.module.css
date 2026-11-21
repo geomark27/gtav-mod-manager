@@ -16,9 +16,18 @@
 }
 
 .brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   padding: var(--space-2) var(--space-3) var(--space-4);
   font-weight: 600;
   font-size: 15px;
+}
+
+.brandSub {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-size: 12px;
 }
 
 .navList {
@@ -94,6 +103,12 @@
 
 .selectorLink {
   color: var(--color-accent);
+}
+
+.selectorGame {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
 }
 
 .select {

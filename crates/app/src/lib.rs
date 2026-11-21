@@ -1,4 +1,4 @@
-//! Application layer of GTA V Mod Manager: use cases, error model, DTOs, logging and the
+//! Application layer of ModSwitch: use cases, error model, DTOs, logging and the
 //! single-instance lock. The Tauri shell maps its commands 1:1 onto this crate.
 
 pub mod adopt;

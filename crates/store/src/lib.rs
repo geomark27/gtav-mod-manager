@@ -1,4 +1,4 @@
-//! SQLite persistence for GTA V Mod Manager: connection, pragmas and schema migrations.
+//! SQLite persistence for ModSwitch: connection, pragmas and schema migrations.
 
 mod database;
 mod error;

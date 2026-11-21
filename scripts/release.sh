@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Publish a GTA V Mod Manager version from main.
+# Publish a ModSwitch version from main.
 #   With bump= or ver= (run on main): runs fmt-check, clippy, the Tauri shell check, the tests and
 #   the UI checks, raises
 #   the version (scripts/bump.sh: the three files, the
@@ -138,14 +138,14 @@ if [[ ${YES:-} != 1 ]]; then
 fi
 
 step "Creating and uploading the tag $tag"
-git tag -a "$tag" origin/main -m "GTA V Mod Manager $tag"
+git tag -a "$tag" origin/main -m "ModSwitch $tag"
 git push --quiet origin "$tag"
 
 # The «prepare» job of the workflow also creates the draft: whichever gets there first wins.
 step "Creating the draft release"
 gh release view "$tag" >/dev/null 2>&1 \
   || printf '%s\n' "$notes" | gh release create "$tag" --draft --verify-tag \
-    --title "GTA V Mod Manager $tag" --notes-file -
+    --title "ModSwitch $tag" --notes-file -
 
 # develop follows main, so the next branch starts from the released version. develop is
 # already contained in main (checked above), so this is a fast-forward.

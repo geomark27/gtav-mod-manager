@@ -1,4 +1,4 @@
-# Architecture — GTA V Mod Manager
+# Architecture — ModSwitch (formerly GTA V Mod Manager)
 
 Status: **v0.1 — approved baseline for Phase 1** · Last update: 2026-11-18 · Owner: Tech Lead
 

@@ -93,7 +93,7 @@ describe("ModsView switches (D-11)", () => {
     renderView();
     expect(
       await screen.findByText(
-        "GTA V or a launcher is running (GTA5.exe). Close it to change mods.",
+        "The game or a launcher is running (GTA5.exe). Close it to change mods.",
       ),
     ).toBeInTheDocument();
     const toggle = await sw("Alpha");
