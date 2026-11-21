@@ -11,6 +11,10 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 
 ## [Unreleased]
 
+### Added
+
+- Red Dead Redemption 2 installations can be registered next to GTA V: the app recognizes the `RDR2.exe` folder, scans it with its own list of original files and mod patterns (Script Hook RDR2, Lenny's Mod Loader, ASI loader, ReShade) and enables or disables its mods the same way. GTA V mod names are never suggested for RDR2. While RDR2 or its launcher is running, no game folder is changed.
+
 ## [0.3.0] - 2026-11-20
 
 ### Added

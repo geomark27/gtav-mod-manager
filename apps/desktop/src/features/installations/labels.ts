@@ -13,6 +13,7 @@ export const STATUS_INFO: Record<InstallationStatus, { label: string; tone: Badg
 export const EDITION_LABEL: Record<Edition, string> = {
   legacy: "Legacy",
   enhanced: "Enhanced",
+  rdr2: "Red Dead Redemption 2",
 };
 
 export const PLATFORM_LABEL: Record<DistributionPlatform, string> = {

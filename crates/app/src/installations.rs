@@ -7,8 +7,8 @@ use std::str::FromStr;
 
 use chrono::{SecondsFormat, Utc};
 use gmm_domain::{
-    BaselineTrust, DistributionPlatform, Edition, Installation, InstallationId, InstallationStatus,
-    root_key,
+    BaselineTrust, DistributionPlatform, Edition, Game, Installation, InstallationId,
+    InstallationStatus, root_key,
 };
 use gmm_platform::StdFs;
 use gmm_scanner::{ValidationProblem, ValidationReport, discover, validate};
@@ -28,6 +28,8 @@ const MAX_NAME_CHARS: usize = 80;
 pub struct InstallationDto {
     /// Identifier (UUID).
     pub id: String,
+    /// Game, derived from the edition.
+    pub game: Game,
     /// Game edition.
     pub edition: Edition,
     /// Distribution platform.
@@ -52,6 +54,7 @@ impl From<&Installation> for InstallationDto {
     fn from(i: &Installation) -> Self {
         Self {
             id: i.id.to_string(),
+            game: i.edition.game(),
             edition: i.edition,
             platform: i.platform,
             display_name: i.display_name.clone(),

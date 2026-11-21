@@ -1,4 +1,4 @@
-//! Domain model of GTA V Mod Manager: entities, value objects and state machines. No I/O.
+//! Domain model of the mod manager (GTA V and Red Dead Redemption 2): entities, value objects and state machines. No I/O.
 
 #[macro_use]
 mod macros;
@@ -7,6 +7,7 @@ pub mod artifact;
 pub mod category;
 pub mod edition;
 pub mod error;
+pub mod game;
 pub mod ids;
 pub mod installation;
 pub mod inventory;
@@ -20,6 +21,7 @@ pub use artifact::{Artifact, ArtifactKind, parse_artifact, tmp_name, tomb_name, 
 pub use category::Category;
 pub use edition::Edition;
 pub use error::{Error, Result};
+pub use game::Game;
 pub use ids::{InstallationId, ModEntryId, ModId, ProfileId, ScanId, TransactionId};
 pub use installation::{
     BaselineTrust, DistributionPlatform, Installation, InstallationStatus, root_key,

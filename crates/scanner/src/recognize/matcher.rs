@@ -90,7 +90,9 @@ pub fn recognize(
     // 1. Every signature whose required constraints are met, with every file it would claim.
     let mut claims: BTreeMap<&RelPath, Vec<&Signature>> = BTreeMap::new();
     let mut matched: Vec<&Signature> = Vec::new();
-    for sig in signatures.iter() {
+    // Signatures of another game are never proposed; another edition of the same game is
+    // proposed with `edition_supported = false`.
+    for sig in signatures.iter().filter(|s| s.is_for_game(edition.game())) {
         if !satisfied(sig, &pool) {
             continue;
         }
@@ -351,6 +353,16 @@ mod tests {
         assert!(find(&r, "asi-loader").edition_supported);
         let r = run(Edition::Legacy, &["OpenIV.asi"]);
         assert!(find(&r, "openiv-asi").edition_supported);
+    }
+
+    #[test]
+    fn signatures_of_another_game_are_never_proposed() {
+        let r = run(
+            Edition::Rdr2,
+            &["dinput8.dll", "ScriptHookV.dll", "Menyoo.asi", "OpenIV.asi"],
+        );
+        assert!(r.mods.is_empty(), "{:?}", r.mods);
+        assert!(r.ambiguous.is_empty());
     }
 
     #[test]

@@ -4,7 +4,7 @@ use super::*;
 use crate::baseline::capture_baseline;
 use crate::catalog::Catalogs;
 use crate::os::testing::FakeOs;
-use gmm_domain::{Edition, RelPath, TransactionId, tmp_name, tomb_name};
+use gmm_domain::{Edition, Game, RelPath, TransactionId, tmp_name, tomb_name};
 use gmm_platform::{StdFs, sha256_bytes};
 use gmm_testkit::{FakeInstall, Snapshot};
 
@@ -49,8 +49,8 @@ fn modded(edition: Edition) -> FakeInstall {
 }
 
 #[test]
-fn originals_and_candidates_on_both_editions() {
-    for edition in Edition::ALL {
+fn originals_and_candidates_on_both_gta_editions() {
+    for edition in Game::Gtav.editions() {
         let i = modded(edition);
         let o = run(&i, &FakeOs::new(), &ScanContext::default());
         for f in gmm_testkit::base_files(edition) {
@@ -98,6 +98,39 @@ fn originals_and_candidates_on_both_editions() {
         assert_eq!(o.stats.by_class["unknown"], 2);
         assert_eq!(o.stats.bytes_hashed, 0);
     }
+}
+
+#[test]
+fn red_dead_redemption_2_uses_its_own_catalog() {
+    let i = FakeInstall::builder(Edition::Rdr2)
+        .with_base_files()
+        .file("ScriptHookRDR2.dll", b"hook".to_vec())
+        .file("dinput8.dll", b"loader".to_vec())
+        .file("lml/MyMod/install.xml", b"<xml/>".to_vec())
+        .file("ScriptHookV.dll", b"gta hook".to_vec())
+        .build()
+        .unwrap();
+    let o = run(&i, &FakeOs::new(), &ScanContext::default());
+    for f in gmm_testkit::base_files(Edition::Rdr2) {
+        assert_eq!(class(&o, f), Classification::Original, "{f}");
+    }
+    for (f, label) in [
+        ("ScriptHookRDR2.dll", "Script Hook RDR2"),
+        ("dinput8.dll", "ASI loader"),
+        ("lml/MyMod/install.xml", "Lenny's Mod Loader folder"),
+    ] {
+        let item = find(&o, f);
+        assert_eq!(item.classification, Classification::Candidate, "{f}");
+        assert_eq!(
+            item.evidence,
+            vec![Evidence::ModPattern {
+                pattern: label.into()
+            }],
+            "{f}"
+        );
+    }
+    // A GTA V file has no meaning here.
+    assert_eq!(class(&o, "ScriptHookV.dll"), Classification::Unknown);
 }
 
 #[test]

@@ -1,4 +1,4 @@
-//! Per-edition catalogs embedded in the binary.
+//! Per-edition catalogs embedded in the binary (GTA V Legacy and Enhanced, Red Dead Redemption 2).
 
 use crate::error::{Error, Result};
 use crate::glob::Glob;
@@ -8,6 +8,7 @@ use std::str::FromStr;
 
 const LEGACY_TOML: &str = include_str!("../catalog/legacy.toml");
 const ENHANCED_TOML: &str = include_str!("../catalog/enhanced.toml");
+const RDR2_TOML: &str = include_str!("../catalog/rdr2.toml");
 
 #[derive(Deserialize)]
 struct RawCatalog {
@@ -51,7 +52,7 @@ pub struct ModPattern {
     pub label: String,
 }
 
-/// Known facts about one GTA V edition. Values are ASSUMPTIONS verified in M7.
+/// Known facts about one edition. Values are ASSUMPTIONS verified on real installations.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Catalog {
     /// Edition described.
@@ -166,47 +167,67 @@ impl Catalog {
 /// Catalogs of every supported edition.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Catalogs {
-    legacy: Catalog,
-    enhanced: Catalog,
+    /// One catalog per edition, in [`Edition::ALL`] order.
+    list: Vec<Catalog>,
 }
 
 impl Catalogs {
     /// Loads the embedded catalogs.
     pub fn load() -> Result<Self> {
-        let legacy = Catalog::parse(LEGACY_TOML)?;
-        let enhanced = Catalog::parse(ENHANCED_TOML)?;
-        if legacy.edition != Edition::Legacy || enhanced.edition != Edition::Enhanced {
-            return Err(Error::Catalog("catalog files swapped".into()));
+        let list = [LEGACY_TOML, ENHANCED_TOML, RDR2_TOML]
+            .into_iter()
+            .map(Catalog::parse)
+            .collect::<Result<Vec<_>>>()?;
+        let editions: Vec<Edition> = list.iter().map(|c| c.edition).collect();
+        if editions != Edition::ALL {
+            return Err(Error::Catalog(format!(
+                "embedded catalogs {editions:?} do not match the editions {:?}",
+                Edition::ALL
+            )));
         }
-        Ok(Self { legacy, enhanced })
+        Ok(Self { list })
     }
 
-    /// Catalog of an edition.
+    /// Catalog of an edition. `load` guarantees one catalog per edition, in
+    /// [`Edition::ALL`] order, so the index is always in range.
     pub fn get(&self, edition: Edition) -> &Catalog {
-        match edition {
-            Edition::Legacy => &self.legacy,
-            Edition::Enhanced => &self.enhanced,
-        }
+        let index = Edition::ALL
+            .iter()
+            .position(|e| *e == edition)
+            .unwrap_or_default();
+        &self.list[index]
     }
 
-    /// Iterates over both catalogs.
+    /// Iterates over every catalog, in [`Edition::ALL`] order.
     pub fn iter(&self) -> impl Iterator<Item = &Catalog> {
-        [&self.legacy, &self.enhanced].into_iter()
+        self.list.iter()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use gmm_domain::Game;
 
     #[test]
-    fn loads_both_editions() {
+    fn loads_every_edition() {
         let c = Catalogs::load().unwrap();
         assert_eq!(c.get(Edition::Legacy).steam_app_id, 271590);
         assert_eq!(c.get(Edition::Enhanced).steam_app_id, 3240220);
+        assert_eq!(c.get(Edition::Rdr2).steam_app_id, 1174180);
+        let editions: Vec<Edition> = c.iter().map(|cat| cat.edition).collect();
+        assert_eq!(editions, Edition::ALL);
+        for edition in Edition::ALL {
+            assert_eq!(c.get(edition).edition, edition);
+        }
         for cat in c.iter() {
             assert_eq!(cat.executable, cat.edition.executable_name());
-            assert_eq!(cat.required_files.len(), 5);
+            let required = if cat.edition.game() == Game::Gtav {
+                5
+            } else {
+                2
+            };
+            assert_eq!(cat.required_files.len(), required);
             assert_eq!(cat.rockstar_registry_keys.len(), 1);
             assert!(cat.rockstar_registry_keys[0].contains('\\'));
         }
@@ -214,6 +235,7 @@ mod tests {
             c.get(Edition::Enhanced).rockstar_registry_keys[0]
                 .ends_with("Grand Theft Auto V Enhanced")
         );
+        assert!(c.get(Edition::Rdr2).rockstar_registry_keys[0].ends_with("Red Dead Redemption 2"));
     }
 
     #[test]
@@ -225,11 +247,13 @@ mod tests {
                     .iter()
                     .any(|p| p.as_str() == cat.executable)
             );
-            assert!(
-                cat.required_files
-                    .iter()
-                    .any(|p| p.as_str() == "update/update.rpf")
-            );
+            if cat.edition.game() == Game::Gtav {
+                assert!(
+                    cat.required_files
+                        .iter()
+                        .any(|p| p.as_str() == "update/update.rpf")
+                );
+            }
         }
     }
 
@@ -252,7 +276,12 @@ mod tests {
     fn patterns_compile_and_publishers_present() {
         let c = Catalogs::load().unwrap();
         for cat in c.iter() {
-            assert_eq!(cat.mod_patterns.len(), 17);
+            let patterns = if cat.edition.game() == Game::Gtav {
+                17
+            } else {
+                11
+            };
+            assert_eq!(cat.mod_patterns.len(), patterns);
             assert_eq!(cat.trusted_publishers.len(), 2);
             assert!(!cat.original_files.is_empty() && !cat.original_globs.is_empty());
             assert!(cat.is_trusted_publisher("  rockstar games, inc. "));
@@ -271,12 +300,14 @@ mod tests {
             for f in &cat.required_files {
                 assert!(cat.is_original(f), "{f}");
             }
-            let other = match cat.edition {
-                Edition::Legacy => Edition::Enhanced,
-                Edition::Enhanced => Edition::Legacy,
-            };
-            let other_exe = RelPath::parse(other.executable_name()).unwrap();
-            assert!(!cat.is_original(&other_exe));
+            for other in Edition::ALL.into_iter().filter(|e| *e != cat.edition) {
+                let other_exe = RelPath::parse(other.executable_name()).unwrap();
+                assert!(
+                    !cat.is_original(&other_exe),
+                    "{other_exe} in {}",
+                    cat.edition
+                );
+            }
         }
     }
 

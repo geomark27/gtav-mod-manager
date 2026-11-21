@@ -9,6 +9,7 @@ import { createQueryClient } from "../../lib/queryClient";
 export function makeInstallation(over: Partial<InstallationDto> = {}): InstallationDto {
   return {
     id: "0192f0e8-0000-7000-8000-000000000001",
+    game: "gtav",
     edition: "legacy",
     platform: "steam",
     displayName: "GTA V Legacy (Steam)",
