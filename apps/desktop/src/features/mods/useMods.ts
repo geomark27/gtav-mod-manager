@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import type { AppError } from "../../bindings/AppError";
 import type { Category } from "../../bindings/Category";
+import type { DeleteModResultDto } from "../../bindings/DeleteModResultDto";
 import type { DriftDto } from "../../bindings/DriftDto";
 import type { ModDetailDto } from "../../bindings/ModDetailDto";
 import type { ModDto } from "../../bindings/ModDto";
@@ -136,6 +137,15 @@ export function useForgetMod(installationId: string) {
   return useMutation<void, AppError, string>({
     mutationFn: (modId) => commands.forgetMod(modId),
     onSuccess: () => invalidateModData(client, installationId),
+  });
+}
+
+/** Deletes a mod: its files leave the game folder and unused vault copies are freed. */
+export function useDeleteMod(installationId: string) {
+  const client = useQueryClient();
+  return useMutation<DeleteModResultDto, AppError, string>({
+    mutationFn: (modId) => commands.deleteMod(modId),
+    onSettled: () => invalidateModData(client, installationId),
   });
 }
 

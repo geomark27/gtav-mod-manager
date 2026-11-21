@@ -2,6 +2,7 @@ import { clearMocks } from "@tauri-apps/api/mocks";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../installations/testing";
+import { deleteText } from "./ModDetailsDialog";
 import { ModsView } from "./ModsView";
 import { APP_ERROR, makeMod, mockModsIpc } from "./testing";
 
@@ -96,12 +97,61 @@ describe("mod details", () => {
     expect(mock.calls.some((c) => c.cmd === "forget_mod")).toBe(false);
   });
 
-  it("offers no Stop managing for disabled mods", async () => {
+  it("offers Delete but no Stop managing for disabled mods", async () => {
     mockModsIpc({ mods: [makeMod({ state: "disabled" })] });
     const dialog = await open("Alpha");
     await within(dialog).findByText("scripts/a.asi");
     expect(within(dialog).queryByRole("button", { name: "Stop managing" })).not.toBeInTheDocument();
-    expect(within(dialog).getByText(/Only enabled, drifted or error/)).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Delete mod" })).toBeEnabled();
+  });
+
+  it("Delete mod explains, confirms, then deletes the mod", async () => {
+    const mock = mockModsIpc({ mods: [makeMod({ state: "enabled" })] });
+    mock.handlers.delete_mod = () => {
+      mock.mods = [];
+      return { name: "Alpha", filesRemoved: 1, vaultBytesFreed: 10 };
+    };
+    const dialog = await open("Alpha");
+    await userEvent.click(await within(dialog).findByRole("button", { name: "Delete mod" }));
+    expect(within(dialog).getByText(/removed from the game folder/)).toHaveTextContent(
+      "This cannot be undone. Original game files are never touched.",
+    );
+    expect(mock.calls.some((c) => c.cmd === "delete_mod")).toBe(false);
+    await userEvent.click(within(dialog).getByRole("button", { name: "Confirm delete" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(mock.calls.find((c) => c.cmd === "delete_mod")?.args).toEqual({ modId: "mod-1" });
+    expect(await screen.findByText(/No managed mods yet/)).toBeInTheDocument();
+  });
+
+  it("Keep the mod backs out, and a refusal is shown", async () => {
+    const mock = mockModsIpc({ mods: [makeMod({ state: "enabled" })] });
+    mock.handlers.delete_mod = () =>
+      Promise.reject({ ...APP_ERROR, code: "DEPENDENCY_BLOCKED", message: 'Other mods require "Alpha".' });
+    const dialog = await open("Alpha");
+    await userEvent.click(await within(dialog).findByRole("button", { name: "Delete mod" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Keep the mod" }));
+    expect(mock.calls.some((c) => c.cmd === "delete_mod")).toBe(false);
+    await userEvent.click(within(dialog).getByRole("button", { name: "Delete mod" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Confirm delete" }));
+    expect(await within(dialog).findByText('Other mods require "Alpha".')).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("offers no Delete for drifted mods and says why", async () => {
+    mockModsIpc({ mods: [makeMod({ state: "drifted" })] });
+    const dialog = await open("Alpha");
+    await within(dialog).findByText("scripts/a.asi");
+    expect(within(dialog).queryByRole("button", { name: "Delete mod" })).not.toBeInTheDocument();
+    expect(within(dialog).getByText(/Restore or keep the changed files before deleting/)).toBeInTheDocument();
+  });
+
+  it("disables Delete while a guard blocks writes", async () => {
+    mockModsIpc({
+      mods: [makeMod({ state: "disabled" })],
+      guard: { gameRunning: ["RDR2.exe"], writable: true, recoveryRequired: false, installationMissing: false },
+    });
+    const dialog = await open("Alpha");
+    expect(await within(dialog).findByRole("button", { name: "Delete mod" })).toBeDisabled();
   });
 
   it("disables Stop managing while a guard blocks writes", async () => {
@@ -182,5 +232,13 @@ describe("mod details", () => {
     const dialog = await open("Alpha");
     expect(await within(dialog).findByRole("button", { name: "Restore vault version" })).toBeDisabled();
     expect(within(dialog).getByRole("button", { name: "Keep current files" })).toBeDisabled();
+  });
+});
+
+describe("deleteText", () => {
+  it("says where the files go", () => {
+    expect(deleteText({ state: "enabled" }, 3)).toMatch(/^Its 3 files are removed from the game folder/);
+    expect(deleteText({ state: "enabled" }, 1)).toMatch(/^Its file is removed/);
+    expect(deleteText({ state: "disabled" }, 3)).toMatch(/^It has no files in the game folder/);
   });
 });

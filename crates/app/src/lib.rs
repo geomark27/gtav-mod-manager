@@ -20,9 +20,11 @@ pub mod mods;
 pub mod online;
 pub mod operation;
 pub mod profiles;
+pub mod remove;
 pub mod scan;
 pub mod status;
 pub mod toggle;
+pub mod tray;
 mod txn;
 pub mod vanilla;
 pub mod vault;
@@ -60,8 +62,10 @@ pub use profiles::{
     ProfileDetailDto, ProfileDto, ProfileEntryDto, ProfileEntryInput, VANILLA_PROFILE_ID,
     profile_name_suggestions,
 };
+pub use remove::DeleteModResultDto;
 pub use scan::{ClassCountDto, ScanDto, ScanStatusDto, ScanSummaryDto};
 pub use status::{AppStatusDto, RecoveryDto};
 pub use toggle::{AffectedModDto, DriftDto, DriftKindDto, PlanPreviewDto, PlannedActionDto};
+pub use tray::{TrayEntry, TrayNotice, online_name, prepare_notice, restore_notice, tray_entries};
 pub use vanilla::VanillaStatusDto;
 pub use vault::{VaultObjectDto, VaultReportDto};
