@@ -16,6 +16,7 @@ import type { GuardStatusDto } from "../bindings/GuardStatusDto";
 import type { ImportPreviewDto } from "../bindings/ImportPreviewDto";
 import type { InstallationDto } from "../bindings/InstallationDto";
 import type { InventoryFilterDto } from "../bindings/InventoryFilterDto";
+import type { DeleteModResultDto } from "../bindings/DeleteModResultDto";
 import type { InventoryPageDto } from "../bindings/InventoryPageDto";
 import type { InventorySummaryDto } from "../bindings/InventorySummaryDto";
 import type { ModDetailDto } from "../bindings/ModDetailDto";
@@ -126,6 +127,7 @@ export const commands = {
   updateMod: (modId: string, name: string, category: Category, notes: string | null) =>
     invokeCommand<ModDto>("update_mod", { modId, name, category, notes }),
   forgetMod: (modId: string) => invokeCommand<void>("forget_mod", { modId }),
+  deleteMod: (modId: string) => invokeCommand<DeleteModResultDto>("delete_mod", { modId }),
   reconcileInstallation: (installationId: string) =>
     invokeCommand<DriftDto[]>("reconcile_installation", { installationId }),
   listProfiles: (installationId: string) =>

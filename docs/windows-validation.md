@@ -100,3 +100,33 @@ On the same COPY as §6, with a trusted baseline captured right after "verify fi
 4. Open GTA V, press **Prepare for online** → "The mods were not disabled" with the running
    process; close the game.
 5. **Restore my mods** → every file back and byte-identical.
+
+## 8. Delete a mod and the tray (v0.5.0)
+
+The tray cannot be tested from WSL: only its texts (`crates/app/src/tray.rs`) and a Windows
+type check (`make shell`) run there. On a COPY (section 4 rules):
+
+**Delete a mod**
+
+1. Mods → open an enabled mod → **Delete mod** → the text says its files leave the game folder
+   and that this cannot be undone → **Confirm delete**: the files are gone from the folder, the
+   mod is gone from the list, Settings → Vault shows no unused copy for it.
+2. Same with a disabled mod: nothing in the game folder changes.
+3. A mod another one requires: refused with "Other mods require …" and their names.
+4. With the game open: the button is disabled with the reason.
+
+**Tray**
+
+1. Start the app: the ModSwitch icon appears next to the clock. Left click opens the window.
+2. Right click: "Open ModSwitch", then one block per installation (GTA V first) with
+   "Prepare for online" and "Restore my mods", then "Quit ModSwitch".
+3. Close the window (X): it hides, a notification says ModSwitch is still running (only the
+   first time). Start the app again from the Start menu: the same window comes back, no second
+   window and no "already running" error.
+4. Tray → **Prepare for online** with the window hidden: a notification with the result (never
+   "safe"); open the window: Dashboard and Mods already show the mods disabled.
+5. Open the game, tray → **Prepare for online**: notification "mods not disabled" naming the
+   game; close the game.
+6. Tray → **Restore my mods**: notification "N mods are back"; files byte-identical.
+7. Register or rename an installation: the tray menu shows the new name.
+8. **Quit ModSwitch**: the icon disappears and the process ends.

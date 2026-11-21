@@ -11,6 +11,11 @@ Every branch that changes something visible adds its line under **[Unreleased]**
 
 ## [Unreleased]
 
+### Added
+
+- Delete a mod: in the mod's details, **Delete mod** removes its files from the game folder and the app forgets it; its stored copy is freed unless another mod uses the same files. Original game files are never touched. A mod that other mods require must wait until those are deleted.
+- Tray icon next to the clock: right-click it to **Prepare for online** or **Restore my mods** for each installation without opening the window, with a notification of the result. Closing the window keeps ModSwitch in the tray; **Quit ModSwitch** ends it, and starting the app again brings the same window back.
+
 ## [0.4.0] - 2026-11-21
 
 ### Added
