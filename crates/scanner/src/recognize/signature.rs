@@ -27,6 +27,12 @@ pub(crate) const SIGNATURE_FILES: &[(&str, &str)] = &[
     sig!("openiv-asi"),
     sig!("openiv-mods-folder"),
     sig!("rampage-trainer"),
+    sig!("rdr2-asi-loader"),
+    sig!("rdr2-lennys-mod-loader"),
+    sig!("rdr2-native-trainer"),
+    sig!("rdr2-reshade"),
+    sig!("rdr2-script-hook"),
+    sig!("rdr2-script-hook-dotnet"),
     sig!("reshade"),
     sig!("script-hook-v"),
     sig!("script-hook-v-dotnet"),
@@ -185,7 +191,7 @@ pub struct Signatures {
 }
 
 impl Signatures {
-    /// Loads and validates the embedded signatures against both edition catalogs.
+    /// Loads and validates the embedded signatures against the catalogs of their game.
     pub fn load(catalogs: &Catalogs) -> Result<Self> {
         Self::from_documents(SIGNATURE_FILES, catalogs)
     }

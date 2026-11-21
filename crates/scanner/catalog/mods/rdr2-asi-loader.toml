@@ -1,0 +1,9 @@
+# The dinput8.dll shipped with Script Hook RDR2 (or a standalone ASI loader): loads *.asi
+# plugins. ASSUMPTION A-12.
+id = "rdr2-asi-loader"
+name = "ASI Loader"
+category = "scripts_gameplay"
+editions = ["rdr2"]
+verified = false
+files = ["dinput8.dll"]
+optional = ["asiloader.log"]

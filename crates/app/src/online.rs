@@ -1,11 +1,12 @@
-//! Online readiness (Phase 5): what is left in the game folder before playing GTA Online, and
-//! "prepare for online" (scan, vanilla mode, check) in one operation.
+//! Online readiness (Phase 5): what is left in the game folder before playing GTA Online or Red
+//! Dead Online, and "prepare for online" (scan, vanilla mode, check) in one operation. The checks
+//! are the same for both games; each game uses its own catalog and its own processes.
 //!
 //! The check reports what it found and what it did not find. It never states that playing
 //! online is safe: Rockstar may look at things the app cannot see. Original game files are
 //! only reported, never repaired (I-01); the fix for them is the launcher's "verify files".
 
-use gmm_domain::{BaselineTrust, Classification, Evidence, InstallationId, ModState};
+use gmm_domain::{BaselineTrust, Classification, Evidence, Game, InstallationId, ModState};
 use gmm_scanner::Catalog;
 use gmm_store::{Database, InventoryFilter, MAX_PAGE_SIZE};
 use serde::Serialize;
@@ -26,7 +27,7 @@ const MAX_ITEMS: u32 = 50;
 #[serde(rename_all = "snake_case")]
 #[ts(export)]
 pub enum ReadinessCheckId {
-    /// GTA V, its launchers and Rockstar services are closed.
+    /// The game, its launchers and Rockstar services are closed.
     GameClosed,
     /// No interrupted or unresolved transaction is waiting for recovery.
     Recovery,
@@ -91,6 +92,8 @@ pub struct ReadinessCheckDto {
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub struct OnlineCheckDto {
+    /// Game of the installation (the UI names its online mode).
+    pub game: Game,
     /// When the check ran, RFC 3339 UTC.
     pub checked_at: String,
     /// Start of the scan the file checks used, RFC 3339 UTC.
@@ -354,6 +357,7 @@ impl App {
             inst.baseline,
         )?;
         Ok(OnlineCheckDto {
+            game: inst.edition.game(),
             checked_at: rfc3339(chrono::Utc::now()),
             scanned_at: db.last_scan(id)?.map(|s| rfc3339(s.started_at)),
             verdict: verdict(&checks),

@@ -115,10 +115,10 @@ fn problem_text(p: ValidationProblem) -> &'static str {
         ValidationProblem::RootNotFound => "The folder does not exist.",
         ValidationProblem::NotADirectory => "The path is not a folder.",
         ValidationProblem::NoExecutable => {
-            "No GTA V executable (GTA5.exe or GTA5_Enhanced.exe) was found in this folder."
+            "No game executable (GTA5.exe, GTA5_Enhanced.exe or RDR2.exe) was found in this folder."
         }
         ValidationProblem::AmbiguousEdition => {
-            "Both the Legacy and Enhanced executables are present, so the edition is ambiguous."
+            "Executables of more than one edition or game are present, so the edition is ambiguous."
         }
         ValidationProblem::MissingRequiredFiles => "Some required game files are missing.",
         ValidationProblem::NotWritable => "The folder is read-only for this app.",
@@ -229,9 +229,11 @@ impl App {
         let Some(edition) = report.edition.filter(|_| is_registrable(&report)) else {
             return Err(AppError::new(
                 ErrorCode::InvalidInput,
-                "This folder is not a complete GTA V installation.",
+                "This folder is not a complete GTA V or Red Dead Redemption 2 installation.",
             )
-            .with_hint("Select the game folder that contains GTA5.exe or GTA5_Enhanced.exe.")
+            .with_hint(
+                "Select the game folder that contains GTA5.exe, GTA5_Enhanced.exe or RDR2.exe.",
+            )
             .with_details(problems(&report).join(" ")));
         };
         let key = root_key(&root);

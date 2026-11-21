@@ -361,8 +361,51 @@ mod tests {
             Edition::Rdr2,
             &["dinput8.dll", "ScriptHookV.dll", "Menyoo.asi", "OpenIV.asi"],
         );
-        assert!(r.mods.is_empty(), "{:?}", r.mods);
+        let ids: Vec<&str> = r.mods.iter().map(|m| m.signature_id.as_str()).collect();
+        assert_eq!(ids, ["rdr2-asi-loader"]);
         assert!(r.ambiguous.is_empty());
+        let r = run(Edition::Legacy, &["ScriptHookRDR2.dll", "vfs.asi"]);
+        assert!(r.mods.is_empty(), "{:?}", r.mods);
+    }
+
+    #[test]
+    fn red_dead_redemption_2_mods_are_recognized() {
+        let r = run(
+            Edition::Rdr2,
+            &[
+                "ScriptHookRDR2.dll",
+                "dinput8.dll",
+                "NativeTrainer.asi",
+                "vfs.asi",
+                "ModManager.Core.dll",
+                "lml/mods.xml",
+                "lml/BetterHorses/install.xml",
+            ],
+        );
+        let ids: Vec<&str> = r.mods.iter().map(|m| m.signature_id.as_str()).collect();
+        let mut sorted = ids.clone();
+        sorted.sort_unstable();
+        assert_eq!(
+            sorted,
+            [
+                "rdr2-asi-loader",
+                "rdr2-lennys-mod-loader",
+                "rdr2-native-trainer",
+                "rdr2-script-hook"
+            ]
+        );
+        assert_eq!(
+            names(find(&r, "rdr2-lennys-mod-loader")),
+            ["lml/mods.xml", "ModManager.Core.dll", "vfs.asi"]
+        );
+        let trainer = find(&r, "rdr2-native-trainer");
+        assert_eq!(trainer.requires, ["rdr2-script-hook", "rdr2-asi-loader"]);
+        assert!(trainer.edition_supported);
+        // A mod inside lml/ is left for grouping, not claimed by the loader.
+        assert_eq!(
+            r.unrecognized,
+            [RelPath::parse("lml/BetterHorses/install.xml").unwrap()]
+        );
     }
 
     #[test]
